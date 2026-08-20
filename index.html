@@ -246,6 +246,8 @@ textarea#q::placeholder{color:var(--ink-dim)}
   border-radius:var(--r);background:var(--surface);
   padding:20px 20px 18px;margin-bottom:14px;
 }
+.ans.pending{opacity:.45}
+.ans.pending .ans-top{margin-bottom:0}
 .ans-top{display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
 .ans-top .dot{
   width:32px;height:32px;border-radius:50%;background:var(--pc);flex:none;
@@ -497,7 +499,7 @@ textarea#q::placeholder{color:var(--ink-dim)}
 const CONFIG = {
   PROXY_URL: "https://tataki-panel.cezanne-trummer.workers.dev",
   MODEL: "claude-sonnet-5",
-  MAX_TOKENS: 16000
+  MAX_TOKENS: 4000
 };
 
 /* ============================================================
@@ -759,39 +761,112 @@ const SCHEMA = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Mark
 }
 Inclus TOUS les personas fournis dans "personas", y compris ceux notés 1 ou 2 (dans ce cas garde les champs courts).`;
 
-const MODE_INSTRUCTIONS = {
+const SCHEMA_ONE = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Markdown, sans préambule, sans texte autour. Structure exacte, pour CE persona uniquement :
+{
+  "id": "identifiant exact du persona tel que fourni",
+  "score": 1-5,
+  "reaction": "sa première réaction spontanée, 1-2 phrases",
+  "aime": "ce qui lui parle, 1-2 phrases",
+  "deteste": "ce qui pourrait le faire décrocher, 1-2 phrases",
+  "question": "la question telle qu'il la formulerait lui-même",
+  "objection": "son objection la plus dure, formulée franchement. Ce qu'il dirait si personne ne l'écoutait poliment.",
+  "jeChangerais": "ce qu'il changerait concrètement pour que ça marche mieux pour lui. Un changement précis et actionnable, pas un principe général.",
+  "maVersion": "sa version à lui : l'angle, le format ou le traitement qu'il préférerait à la place. Une ou deux phrases, formulé comme une proposition de production.",
+  "partage": "faible | moyen | fort",
+  "userNeeds": ["user needs activés"],
+  "plateforme": "TikTok | Instagram | YouTube | Snapchat",
+  "moment": "matin | midi | trajet | soir | week-end | scroll nocturne",
+  "citation": "une phrase qu'il pourrait vraiment prononcer"
+}`;
+
+const SCHEMA_SYNTH = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Markdown, sans préambule, sans texte autour. Structure exacte :
+{
+  "userNeeds": "classement des motivations les plus activées, 1-2 phrases",
+  "plateforme": "quelle plateforme est la plus cohérente et pourquoi, 1-2 phrases",
+  "risques": ["ce qui pourrait faire décrocher"],
+  "opportunites": ["comment renforcer le concept"],
+  "contreProposition": "la version alternative du concept que le panel défendrait, en synthétisant les propositions des personas. 2-4 phrases, formulée comme un vrai pitch de production.",
+  "reco": "recommandation éditoriale honnête et sans complaisance : est-ce vraiment très Tataki ou est-ce qu'on se rassure, qu'est-ce qui manque, quels personas sont oubliés, plutôt TikTok/Instagram/YouTube/Snapchat, et le point de désaccord le plus intéressant du panel. 4-6 phrases."
+}`;
+
+const MODE_ONE = {
   concept: `# TÂCHE
-Évalue le concept soumis pour chacun des personas ci-dessus. Note de 1 à 5 : 5 = persona idéal, 4 = très concerné, 3 = potentiellement concerné, 2 = peu concerné, 1 = non concerné.
-` + SCHEMA,
+Évalue le concept soumis pour CE persona uniquement. Note de 1 à 5 : 5 = persona idéal, 4 = très concerné, 3 = potentiellement concerné, 2 = peu concerné, 1 = non concerné. Le 5 doit être rare et mérité.
+` + SCHEMA_ONE,
 
   reaction: `# TÂCHE
-Chaque persona répond directement à la question posée, à la première personne, avec sa propre voix, son vocabulaire et ses tics de langage. Pas de langue de bois, pas de réponse lisse.
-Structure ta réponse ainsi, en Markdown :
+CE persona répond directement à la question posée, à la première personne, avec sa propre voix, son vocabulaire et ses tics de langage. Pas de langue de bois, pas de réponse lisse.
+Structure ta réponse en Markdown, sans rien ajouter avant ni après :
 ## Prénom — Rôle
 Sa réponse (3-6 phrases, à la première personne). Il doit dire ce qu'il pense vraiment, y compris ce qui fâche.
 **Ce qu'il voudrait à la place :** ce qu'il aimerait voir, concrètement, sur ce sujet.
-**Ce que ça dit à l'équipe :** une ligne d'analyse éditoriale à destination de Tataki.
-Termine par une section "## Ce qu'il faut en retenir" : 3 à 5 points d'enseignements concrets, dont au moins un qui remet en question une habitude de l'équipe.`,
+**Ce que ça dit à l'équipe :** une ligne d'analyse éditoriale à destination de Tataki.`,
 
   angles: `# TÂCHE
-Pour chaque persona, propose 3 angles éditoriaux distincts sur le sujet soumis. Chaque angle doit être formulé comme un vrai angle de production, pas comme une thématique vague. Les angles doivent venir de ce que le persona voudrait voir, pas de ce qu'un média voudrait produire.
-Structure ta réponse en Markdown :
+Pour CE persona, propose 3 angles éditoriaux distincts sur le sujet soumis. Des vrais angles de production, pas des thématiques vagues. Ils doivent venir de ce que le persona voudrait voir, pas de ce qu'un média voudrait produire.
+Structure ta réponse en Markdown, sans rien ajouter avant ni après :
 ## Prénom — Rôle
 Pour chaque angle : un titre d'angle en gras, une phrase d'explication, l'accroche des 3 premières secondes entre guillemets, la plateforme et le format recommandés.
-Ajoute pour chaque persona une ligne **L'angle qu'il ne veut surtout pas voir :** le traitement attendu et déjà vu qui le ferait décrocher.
-Termine par "## Les angles à garder" : les 3 angles les plus forts tous personas confondus, et pourquoi. Puis "## L'angle le plus risqué" : celui qui pourrait très bien marcher ou complètement rater, et à quelle condition.`,
+Termine par **L'angle qu'il ne veut surtout pas voir :** le traitement attendu et déjà vu qui le ferait décrocher.`,
 
   cm: `# TÂCHE
-Analyse l'élément soumis (post, légende, réponse en commentaire, ton) du point de vue de chaque persona. Sois sévère : c'est un test, pas une validation.
-Structure ta réponse en Markdown :
+Analyse l'élément soumis (post, légende, réponse en commentaire, ton) du point de vue de CE persona. Sois sévère : c'est un test, pas une validation.
+Structure ta réponse en Markdown, sans rien ajouter avant ni après :
 ## Prénom — Rôle
 - **Ce qu'il comprend au premier coup d'œil**
 - **Ce qui accroche / ce qui bloque**
 - **Ce qu'il commenterait, textuellement** (entre guillemets, avec son vrai registre)
-- **Comment il l'aurait écrit** (sa propre version de la formulation)
-Termine par "## Réécriture recommandée" : une version améliorée de l'élément soumis, puis "## Points de vigilance CM" : 3 à 5 points.`
+- **Comment il l'aurait écrit** (sa propre version de la formulation)`
 };
 
+const MODE_SYNTH = {
+  concept: `# TÂCHE
+Tu disposes ci-dessous des réponses individuelles de chaque persona interrogé. Produis la synthèse éditoriale pour l'équipe Tataki. Ne répète pas les réponses individuelles : dégage ce qu'elles disent ensemble, et surtout ce sur quoi elles divergent.
+` + SCHEMA_SYNTH,
+
+  reaction: `# TÂCHE
+Tu disposes ci-dessous des réponses individuelles de chaque persona. Produis uniquement une section Markdown "## Ce qu'il faut en retenir" : 3 à 5 points d'enseignements concrets pour l'équipe éditoriale, dont au moins un qui remet en question une habitude de l'équipe, et un qui pointe un désaccord entre personas. Rien d'autre.`,
+
+  angles: `# TÂCHE
+Tu disposes ci-dessous des angles proposés par chaque persona. Produis uniquement, en Markdown : "## Les angles à garder" (les 3 plus forts tous personas confondus, et pourquoi), puis "## L'angle le plus risqué" (celui qui pourrait très bien marcher ou complètement rater, et à quelle condition). Rien d'autre.`,
+
+  cm: `# TÂCHE
+Tu disposes ci-dessous des lectures de chaque persona. Produis uniquement, en Markdown : "## Réécriture recommandée" (une version améliorée de l'élément soumis), puis "## Points de vigilance CM" (3 à 5 points). Rien d'autre.`
+};
+
+function personaPrompt(id, mode, question){
+  const p = PERSONAS.find(x=>x.id===id);
+  return `${PREAMBLE}
+
+# PANEL INTERROGÉ
+Tu incarnes uniquement ${p.name}. Ne parle pas des autres personas.
+
+--- PERSONA id="${p.id}" ---
+${p.sheet}
+
+${MODE_ONE[mode]}
+
+# SOUMIS PAR L'ÉQUIPE
+${question.trim()}`;
+}
+
+function synthPrompt(ids, mode, question, answers){
+  const sel = PERSONAS.filter(p=>ids.includes(p.id));
+  return `${PREAMBLE}
+
+# PANEL INTERROGÉ
+${sel.map(p=>p.name).join(", ")}.
+
+${MODE_SYNTH[mode]}
+
+# SOUMIS PAR L'ÉQUIPE
+${question.trim()}
+
+# RÉPONSES INDIVIDUELLES DU PANEL
+${answers}`;
+}
+
+/* Prompt complet, utilisé uniquement par le bouton « Copier le prompt ». */
 function buildPrompt(ids, mode, question){
   const sel = PERSONAS.filter(p=>ids.includes(p.id));
   const sheets = sel.map(p=>`--- PERSONA id="${p.id}" ---\n${p.sheet}`).join("\n\n");
@@ -800,7 +875,8 @@ function buildPrompt(ids, mode, question){
     : sel.length===1
       ? `Tu incarnes uniquement ${sel[0].name}. Ne parle pas des autres personas.`
       : `Tu interroges une sélection de ${sel.length} personas : ${sel.map(p=>p.name).join(", ")}. Ne parle pas des autres.`;
-  return `${PREAMBLE}\n\n# PANEL INTERROGÉ\n${scope}\n\n${sheets}\n\n${MODE_INSTRUCTIONS[mode]}\n\n# SOUMIS PAR L'ÉQUIPE\n${question.trim()}`;
+  const instr = MODE_ONE[mode].replace(/CE persona/g,"chaque persona") + "\n\n" + MODE_SYNTH[mode];
+  return `${PREAMBLE}\n\n# PANEL INTERROGÉ\n${scope}\n\n${sheets}\n\n${instr}\n\n# SOUMIS PAR L'ÉQUIPE\n${question.trim()}`;
 }
 
 /* ============================================================
@@ -1028,22 +1104,9 @@ function tryJson(txt){
   return null;
 }
 
-function renderConcept(j){
-  const order = [...(j.personas||[])].sort((x,y)=>(y.score||0)-(x.score||0));
-  const find = id => PERSONAS.find(p=>p.id===id) || {name:id,role:"",color:"var(--accent)",init:"?"};
-
-  const recap = `<div class="synth"><h3>📊 Pertinence par persona</h3><div class="recap">` +
-    order.map(a=>{
-      const p=find(a.id);
-      return `<div class="recap-row" style="--pc:${p.color}">
-        <span class="nmm">${esc(p.name)}</span>
-        <span class="bar"><i style="width:${(a.score||0)/5*100}%"></i></span>
-        <span class="vv">${a.score||0}/5</span></div>`;
-    }).join("") + `</div></div>`;
-
-  const cards = order.filter(a=>(a.score||0)>=3).map(a=>{
-    const p=find(a.id);
-    return `<article class="ans" style="--pc:${p.color}">
+function personaCard(a){
+  const p = PERSONAS.find(x=>x.id===a.id) || {name:a.id,role:"",color:"var(--accent)",init:"?"};
+  return `<article class="ans" style="--pc:${p.color}">
       <div class="ans-top">
         <span class="dot">${p.init}</span>
         <span class="who"><b>${esc(p.name)}</b><span>${esc(p.role)}</span></span>
@@ -1066,16 +1129,22 @@ function renderConcept(j){
         ${(a.userNeeds||[]).map(u=>`<span class="tag">${esc(u)}</span>`).join("")}
       </div>
     </article>`;
-  }).join("");
+}
 
-  const low = order.filter(a=>(a.score||0)<3);
-  const lowBlock = low.length ? `<div class="synth"><h3>Peu ou pas concernés</h3>` +
-    low.map(a=>{const p=find(a.id);
-      return `<h4 style="color:${p.color}">${esc(p.name)} — ${a.score}/5</h4><p>${esc(a.reaction||a.deteste||"")}</p>`;
-    }).join("") + `</div>` : "";
+function recapBlock(list){
+  const order=[...list].sort((x,y)=>(y.score||0)-(x.score||0));
+  return `<div class="synth"><h3>📊 Pertinence par persona</h3><div class="recap">` +
+    order.map(a=>{
+      const p=PERSONAS.find(x=>x.id===a.id)||{name:a.id,color:"var(--accent)"};
+      return `<div class="recap-row" style="--pc:${p.color}">
+        <span class="nmm">${esc(p.name)}</span>
+        <span class="bar"><i style="width:${(a.score||0)/5*100}%"></i></span>
+        <span class="vv">${a.score||0}/5</span></div>`;
+    }).join("") + `</div></div>`;
+}
 
-  const s = j.synthese||{};
-  const synth = `<div class="synth">
+function synthBlock(s){
+  return `<div class="synth">
     <h3>🎯 Recommandation éditoriale</h3>
     <p>${esc(s.reco||"")}</p>
     ${s.contreProposition?`<h4>🔁 La contre-proposition du panel</h4><p>${esc(s.contreProposition)}</p>`:""}
@@ -1084,22 +1153,120 @@ function renderConcept(j){
     <h4>⚠️ Risques</h4><ul>${(s.risques||[]).map(x=>`<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ul>
     <h4>💡 Opportunités</h4><ul>${(s.opportunites||[]).map(x=>`<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ul>
   </div>`;
-
-  return recap + cards + lowBlock + synth;
 }
 
-function renderOut(html){
+/* Lance les requêtes par vagues de 3 : assez rapide, sans saturer l'API. */
+async function inWaves(ids, size, fn){
+  const out=[];
+  for(let i=0;i<ids.length;i+=size){
+    const wave = ids.slice(i,i+size).map(id=>fn(id).catch(e=>({__error:true, id, message:e.message})));
+    out.push(...await Promise.all(wave));
+  }
+  return out;
+}
+
+function shell(names){
+  return `<div class="res-head"><h2>Réponse du panel</h2>
+      <span class="count" id="progress">0 / ${names.length} — le panel réfléchit</span></div>
+    <div id="cards">` +
+    names.map(p=>`<div class="ans pending" id="slot-${p.id}" style="--pc:${p.color}">
+        <div class="ans-top"><span class="dot">${p.init}</span>
+        <span class="who"><b>${esc(p.name)}</b><span>${esc(p.role)}</span></span>
+        <span class="spin" style="margin-left:auto"></span></div></div>`).join("") +
+    `</div><div id="after"></div>`;
+}
+
+async function run(){
+  const q = $("#q").value.trim();
+  if(!q){ $("#q").focus(); $("#status").textContent="Écris d'abord ton sujet."; return; }
+  if(!S.selected.length) return;
+
+  $("#go").disabled = true;
+  $("#status").textContent = "";
+  const sel = PERSONAS.filter(p=>S.selected.includes(p.id));
+  $("#out").innerHTML = shell(sel);
+  $("#out").scrollIntoView({behavior:"smooth",block:"start"});
+
+  S.subject = q;
+  let done = 0;
+  const bump = ()=>{ done++; const el=$("#progress");
+    if(el) el.textContent = `${done} / ${sel.length} — le panel réfléchit`; };
+
+  const raw = {};
+  try{
+    const results = await inWaves(S.selected, 3, async id=>{
+      const txt = await callModel([{role:"user", content: personaPrompt(id, S.mode, q)}]);
+      raw[id]=txt; bump();
+      const slot = $("#slot-"+id);
+      if(S.mode==="concept"){
+        const j = tryJson(txt);
+        if(j && slot) slot.outerHTML = personaCard({...j, id});
+        else if(slot) slot.outerHTML = `<div class="md">${miniMd(txt)}</div>`;
+        return j ? {...j, id} : {id, score:0};
+      }else{
+        if(slot) slot.outerHTML = `<div class="md">${miniMd(txt)}</div>`;
+        return {id, text:txt};
+      }
+    });
+
+    const failed = results.filter(r=>r.__error);
+    failed.forEach(f=>{
+      const slot=$("#slot-"+f.id);
+      if(slot) slot.outerHTML = `<div class="err"><b>${esc(PERSONAS.find(p=>p.id===f.id).name)} n'a pas répondu</b>${esc(f.message).slice(0,200)}</div>`;
+    });
+    const ok = results.filter(r=>!r.__error);
+    if(!ok.length) throw new Error("Aucun persona n'a pu répondre.");
+
+    const el=$("#progress"); if(el) el.textContent = "Synthèse en cours…";
+
+    const answers = ok.map(r=>{
+      const p=PERSONAS.find(x=>x.id===r.id);
+      return `### ${p.name} — ${p.role}\n${raw[r.id]||""}`;
+    }).join("\n\n");
+
+    let synthTxt="";
+    try{
+      synthTxt = await callModel([{role:"user", content: synthPrompt(S.selected, S.mode, q, answers)}]);
+    }catch(e){ synthTxt=""; }
+
+    let tail = "";
+    if(S.mode==="concept"){
+      tail = recapBlock(ok);
+      const sj = tryJson(synthTxt);
+      if(sj) tail += synthBlock(sj);
+    }else if(synthTxt){
+      tail = `<div class="synth">${miniMd(synthTxt)}</div>`;
+    }
+
+    S.thread = [
+      {role:"user", content: buildPrompt(S.selected, S.mode, q)},
+      {role:"assistant", content: answers + "\n\n" + synthTxt}
+    ];
+
+    if($("#progress")) $("#progress").remove();
+    $("#after").innerHTML = tail;
+    addFollowUp();
+  }catch(err){
+    S.thread=[];
+    showError(err);
+  }finally{
+    $("#go").disabled = false;
+  }
+}
+
+function addFollowUp(){
   const names = PERSONAS.filter(p=>S.selected.includes(p.id)).map(p=>p.name).join(", ");
-  $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2>
-    <button class="ghost" id="btnCopyRes">Copier le résultat</button></div>` + html +
-    `<div id="thread"></div>
+  $("#out").insertAdjacentHTML("beforeend",
+    `<div class="res-head" style="border:none;padding:0;margin:22px 0 0">
+       <button class="ghost" id="btnCopyRes">Copier le résultat</button></div>
+     <div id="thread"></div>
      <div class="follow">
        <div class="follow-head">Continuer avec le même panel</div>
        <p class="follow-sub">${esc(names)} gardent en mémoire le sujet et ce qu'ils ont déjà dit. Creuse un point, demande-leur d'arbitrer, ou soumets-leur une version modifiée.</p>
        <textarea id="followup" placeholder="Ex. : et si on le faisait en 3 épisodes de 8 minutes plutôt qu'en vertical ?"></textarea>
        <div class="follow-ex" id="followEx"></div>
        <button class="go small" id="followGo">Relancer</button>
-     </div>`;
+     </div>`);
 
   $("#followEx").innerHTML = [
     "Sur quoi vous n'êtes pas d'accord entre vous ?",
@@ -1114,55 +1281,11 @@ function renderOut(html){
   $("#followup").addEventListener("keydown",e=>{
     if((e.metaKey||e.ctrlKey)&&e.key==="Enter") relance();
   });
-
-  $("#btnCopyRes")?.addEventListener("click",e=>{
-    const txt = $("#out").innerText.replace(/^Réponse du panel\nCopier le résultat\n/,"");
-    navigator.clipboard.writeText(txt);
+  $("#btnCopyRes").addEventListener("click",e=>{
+    navigator.clipboard.writeText($("#out").innerText);
     e.target.textContent = "Copié";
     setTimeout(()=>e.target.textContent="Copier le résultat",1600);
   });
-  $("#out").scrollIntoView({behavior:"smooth",block:"start"});
-}
-
-/* ============================================================
-   RUN
-   ============================================================ */
-async function run(){
-  const q = $("#q").value.trim();
-  if(!q){ $("#q").focus(); $("#status").textContent="Écris d'abord ton sujet."; return; }
-  if(!S.selected.length) return;
-
-  $("#go").disabled = true;
-  $("#status").textContent = "";
-  const names = PERSONAS.filter(p=>S.selected.includes(p.id)).map(p=>p.name).join(", ");
-  $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2></div>
-    <div class="loading"><span class="spin"></span> Le panel réfléchit — ${esc(names)}. Une trentaine de secondes.</div>`;
-
-  const prompt = buildPrompt(S.selected, S.mode, q);
-  S.thread = [{role:"user", content: prompt}];
-  S.subject = q;
-
-  try{
-    const txt = await callModel(S.thread);
-    S.thread.push({role:"assistant", content: txt});
-    if(S.mode==="concept"){
-      const j = tryJson(txt);
-      if(j && j.personas){
-        renderOut(renderConcept(j));
-      }else if(txt.trim().startsWith("{")||txt.includes('"personas"')){
-        renderOut(`<div class="err"><b>Réponse illisible</b>Le panel a bien répondu, mais sa réponse est arrivée incomplète et n'a pas pu être mise en forme. Relance la consultation, ou réduis le nombre de personas sélectionnés.</div>`);
-      }else{
-        renderOut(`<div class="md">${miniMd(txt)}</div>`);
-      }
-    }else{
-      renderOut(`<div class="md">${miniMd(txt)}</div>`);
-    }
-  }catch(err){
-    S.thread = [];
-    showError(err);
-  }finally{
-    $("#go").disabled = false;
-  }
 }
 
 async function relance(){
@@ -1181,7 +1304,7 @@ async function relance(){
 
   const followPrompt = `${q}
 
-(Rappel : tu restes dans la même consultation, avec les mêmes personas et le même sujet. Chaque persona garde sa voix, sa position et ce qu'il a déjà dit — il peut nuancer ou changer d'avis, mais il doit rester cohérent avec lui-même. Réponds en Markdown, avec un titre "## Prénom — Rôle" par persona concerné, et termine par "## Ce qu'il faut en retenir". Reste exigeant : continue de challenger plutôt que de valider.)`;
+(Rappel : tu restes dans la même consultation, avec les mêmes personas et le même sujet. Chaque persona garde sa voix, sa position et ce qu'il a déjà dit — il peut nuancer ou changer d'avis, mais il doit rester cohérent avec lui-même. Réponds en Markdown, avec un titre "## Prénom — Rôle" par persona concerné, et termine par "## Ce qu'il faut en retenir". Reste exigeant : continue de challenger plutôt que de valider. Va à l'essentiel : 3 à 5 phrases par persona maximum.)`;
 
   S.thread.push({role:"user", content: followPrompt});
 
@@ -1200,7 +1323,7 @@ async function relance(){
 function showError(err){
   let msg;
   if(err.code==="no-access"){
-    msg = `<b>Pas encore d'accès au modèle</b>Ouvre <em>Réglages</em> et renseigne l'adresse du relais fourni par l'équipe, ou ta propre clé API. Sinon, utilise <em>Copier le prompt</em> et colle-le dans Claude.`;
+    msg = `<b>Pas encore d'accès au modèle</b>Ouvre <em>Réglages</em> et renseigne l'adresse du relais, ou ta propre clé API. Sinon, utilise <em>Copier le prompt</em> et colle-le dans Claude.`;
   }else if(String(err.code).startsWith("http-401")||String(err.code).startsWith("http-403")){
     msg = `<b>Accès refusé</b>Message exact renvoyé par le relais :<br><br><code style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-word">${esc(err.message).slice(0,600)}</code>`;
   }else if(String(err.code).startsWith("http-429")){
