@@ -27,7 +27,7 @@
      ils se distinguent par le nom et l'indice, pas par la couleur. */
   --lea:#FFE500;
   --noah:#FFE500;
-  --ines:#FFE500;
+  --lisa:#FFE500;
   --yanis:#FFE500;
   --zoe:#FFE500;
   --theo:#FFE500;
@@ -145,7 +145,7 @@ button{font-family:inherit}
 .fiche-head .dot{
   width:34px;height:34px;border-radius:50%;background:var(--accent);flex:none;
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--display);font-size:17px;color:#000;
+  font-family:var(--display);font-size:13px;letter-spacing:.02em;color:#000;
 }
 .fiche-head b{display:block;font-size:17px;font-weight:700;line-height:1.2}
 .fiche-head span span{color:var(--ink-muted);font-size:12.5px}
@@ -160,7 +160,7 @@ button{font-family:inherit}
 .pcard .dot{
   width:26px;height:26px;border-radius:50%;background:var(--pc);
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--display);font-size:14px;color:#000;margin-bottom:10px;
+  font-family:var(--display);font-size:11px;letter-spacing:.02em;color:#000;margin-bottom:10px;
 }
 .pcard .nm{font-weight:700;font-size:15px;letter-spacing:-.01em}
 .pcard .rl{color:var(--ink-muted);font-size:12.5px;line-height:1.35;margin-top:2px}
@@ -250,7 +250,7 @@ textarea#q::placeholder{color:var(--ink-dim)}
 .ans-top .dot{
   width:32px;height:32px;border-radius:50%;background:var(--pc);flex:none;
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--display);font-size:16px;color:#000;
+  font-family:var(--display);font-size:12.5px;letter-spacing:.02em;color:#000;
 }
 .ans-top .who b{display:block;font-size:16px;font-weight:700;line-height:1.2}
 .ans-top .who span{color:var(--ink-muted);font-size:12.5px}
@@ -317,6 +317,49 @@ textarea#q::placeholder{color:var(--ink-dim)}
 .md li{font-size:14.8px;line-height:1.55;margin-bottom:4px}
 .md strong{color:#fff}
 .md hr{border:none;border-top:1px solid var(--line);margin:20px 0}
+
+/* challenge blocks */
+.challenge{
+  margin-top:12px;padding:12px 14px;border-radius:10px;
+  background:var(--surface-2);border-left:2px solid var(--line);
+}
+.challenge b{
+  display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-dim);margin-bottom:4px;
+}
+.challenge p{margin:0;font-size:14px;line-height:1.5}
+.challenge.propose{border-left-color:var(--accent)}
+.challenge.propose b{color:var(--accent)}
+
+/* follow-up */
+.follow{
+  border:1px solid var(--line);border-radius:var(--r);
+  background:var(--surface);padding:20px;margin-top:26px;
+}
+.follow-head{
+  font-family:var(--display);text-transform:uppercase;font-size:16px;
+  letter-spacing:.02em;margin-bottom:5px;
+}
+.follow-sub{color:var(--ink-muted);font-size:13px;line-height:1.5;margin:0 0 13px}
+#followup{
+  width:100%;min-height:76px;resize:vertical;
+  background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  color:var(--ink);font-family:inherit;font-size:15px;line-height:1.5;padding:13px;
+}
+#followup:focus{outline:none;border-color:var(--accent)}
+#followup::placeholder{color:var(--ink-dim)}
+.follow-ex{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px}
+.go.small{font-size:14px;padding:11px 24px}
+
+.turn{margin-top:22px}
+.turn-q{
+  border-left:3px solid var(--accent);padding:10px 0 10px 14px;margin-bottom:14px;
+}
+.turn-q b{
+  display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:4px;
+}
+.turn-q p{margin:0;font-size:15.5px;line-height:1.5}
 
 /* ---------- MODAL ---------- */
 .mask{
@@ -462,7 +505,7 @@ const CONFIG = {
    ============================================================ */
 const PERSONAS = [
   {
-    id:"lea", name:"Léa", role:"La Connectrice", color:"var(--lea)", init:"L",
+    id:"lea", name:"Léa", role:"La Connectrice", color:"var(--lea)", init:"LÉ",
     meta:"16 ans · Lausanne",
     test:"Le test du partage : est-ce qu'on s'envoie ça entre amies ?",
     plats:[["Snap",3],["Insta",2],["TikTok",2],["YT",1]],
@@ -482,7 +525,7 @@ Déteste : les experts qui parlent longtemps, le ton institutionnel, le jargon.
 Si un contenu lui plaît, elle l'envoie à ses amies.`
   },
   {
-    id:"noah", name:"Noah", role:"L'Explorateur", color:"var(--noah)", init:"N",
+    id:"noah", name:"Noah", role:"L'Explorateur", color:"var(--noah)", init:"NO",
     meta:"18 ans · Fribourg",
     test:"Le test de l'immersion : est-ce qu'on apprend sans avoir l'impression d'un cours ?",
     plats:[["YT",3],["Insta",2],["Podcast",2],["TikTok",1]],
@@ -501,7 +544,7 @@ Recherche : immersions, expériences, témoignages, reportages.
 Déteste : les débats abstraits, les contenus moralisateurs.`
   },
   {
-    id:"ines", name:"Inès", role:"La Scroll Addict", color:"var(--ines)", init:"I",
+    id:"lisa", name:"Lisa", role:"La Scroll Addict", color:"var(--lisa)", init:"LI",
     meta:"15 ans · Genève",
     test:"Le test des 3 secondes : est-ce que ça accroche avant le scroll ?",
     plats:[["TikTok",3],["Snap",2],["Insta",1]],
@@ -512,7 +555,7 @@ Déteste : les débats abstraits, les contenus moralisateurs.`
       utilite:"Interroge-la sur tes trois premières secondes, tes accroches et tes formats verticaux. C'est le filtre le plus impitoyable du panel — si ça passe chez elle, ça passe partout.",
       citation:"Si ça m'accroche pas en trois secondes je pars."
     },
-    sheet:`INÈS — "La Scroll Addict", 15 ans, cycle d'orientation à Genève.
+    sheet:`LISA — "La Scroll Addict", 15 ans, cycle d'orientation à Genève.
 Plateformes : TikTok +++, Snapchat ++, Instagram +.
 Motivations : se divertir, s'évader.
 Citation : "Si ça m'accroche pas en trois secondes je pars."
@@ -520,7 +563,7 @@ Recherche : humour, émotions, surprises, trends.
 Déteste : les vidéos lentes, le ton institutionnel.`
   },
   {
-    id:"yanis", name:"Yanis", role:"Le Chercheur de sens", color:"var(--yanis)", init:"Y",
+    id:"yanis", name:"Yanis", role:"Le Chercheur de sens", color:"var(--yanis)", init:"YA",
     meta:"20 ans · Genève",
     test:"Le test de la nuance : est-ce que ça explique vraiment, ou ça survole ?",
     plats:[["YT",3],["Podcast",2],["Insta",2]],
@@ -539,7 +582,7 @@ Recherche : de la nuance, du contexte, des réponses.
 Déteste : le sensationnalisme, le simplisme.`
   },
   {
-    id:"zoe", name:"Zoé", role:"La Sceptique numérique", color:"var(--zoe)", init:"Z",
+    id:"zoe", name:"Zoé", role:"La Sceptique numérique", color:"var(--zoe)", init:"ZO",
     meta:"22 ans · Neuchâtel",
     test:"Le test de la sincérité : est-ce que ça sonne vrai ou fabriqué ?",
     plats:[["Insta",2],["YT",2],["Podcast",2]],
@@ -558,7 +601,7 @@ Recherche : authenticité, sincérité, contenus humains.
 Déteste : les injonctions, le bullshit, les contenus artificiels.`
   },
   {
-    id:"theo", name:"Théo", role:"L'Ancré", color:"var(--theo)", init:"T",
+    id:"theo", name:"Théo", role:"L'Ancré", color:"var(--theo)", init:"TH",
     meta:"24 ans · Vallée de Joux",
     test:"Le test du hors-ville : est-ce qu'on parle encore à ceux qui ne vivent pas à Lausanne ou Genève ?",
     plats:[["YT",3],["TikTok",2],["Snap",2],["Insta",1]],
@@ -586,7 +629,7 @@ Rapport à Tataki : il pourrait aimer Tataki, mais seulement si Tataki ne donne 
 Citation : "J'ai pas besoin qu'on m'explique comment vivre. J'aime juste voir des gens vrais et comprendre comment ils vivent."`
   },
   {
-    id:"camille", name:"Camille", role:"La Jeune Adulte en Transition", color:"var(--camille)", init:"C",
+    id:"camille", name:"Camille", role:"La Jeune Adulte en Transition", color:"var(--camille)", init:"CA",
     meta:"26 ans · Lausanne",
     test:"Le test de l'utilité : est-ce que ça m'apporte vraiment quelque chose ?",
     plats:[["Insta",3],["YT",2],["Podcast",2],["TikTok",1]],
@@ -616,10 +659,10 @@ Citation : "J'ai plus envie qu'on m'impressionne. J'ai envie qu'on m'aide à com
 
 const PRESETS = [
   { label:"Tout le panel (7)", ids:PERSONAS.map(p=>p.id) },
-  { label:"Scroll & formats courts", ids:["ines","lea"] },
+  { label:"Scroll & formats courts", ids:["lisa","lea"] },
   { label:"Profondeur & formats longs", ids:["noah","yanis","camille"] },
-  { label:"Publics éloignés de la RTS", ids:["theo","ines"] },
-  { label:"Les 15-18", ids:["ines","lea","noah"] },
+  { label:"Publics éloignés de la RTS", ids:["theo","lisa"] },
+  { label:"Les 15-18", ids:["lisa","lea","noah"] },
   { label:"Les 20-26", ids:["yanis","zoe","theo","camille"] }
 ];
 
@@ -674,7 +717,16 @@ Tataki est le média de service public qui traduit la société pour les moins d
 - Snapchat — proximité, appartenance, intimité, communauté. User needs : interagir, se réconforter.
 
 # EXIGENCES DE TON
-Réponds en français de Suisse romande, sans anglicismes marketing inutiles. Sois honnête : si le concept ne parle pas à un persona, dis-le franchement plutôt que de le forcer. Les citations doivent sonner comme de vraies phrases prononcées par ces jeunes, pas comme du copy d'agence.`;
+Réponds en français de Suisse romande, sans anglicismes marketing inutiles. Les citations doivent sonner comme de vraies phrases prononcées par ces jeunes, pas comme du copy d'agence.
+
+# POSTURE : CHALLENGER, PAS VALIDER
+Tu n'es pas là pour rassurer l'équipe. Un panel qui trouve tout bien ne sert à rien.
+- Sois exigeant. Si le concept est mou, banal, déjà vu ou mal ciblé, dis-le franchement et explique pourquoi.
+- Ne distribue pas de bonnes notes par politesse. Un 5/5 doit être rare et mérité. Un concept moyen mérite un 3.
+- Chaque persona doit formuler au moins une objection réelle, même quand il aime le concept. Cherche activement la faille : le moment où il décrocherait, la promesse non tenue, le détail qui sonne faux.
+- Chaque persona doit proposer sa version. Pas une critique en l'air : un changement précis, un angle alternatif, une accroche différente, un format qui lui irait mieux.
+- Parle depuis son intérêt à lui, pas depuis l'intérêt de Tataki. Il ne cherche pas à aider le média à faire un bon contenu, il dit ce qu'il voudrait voir.
+- Si deux personas sont en désaccord sur le concept, ne lisse pas : le désaccord est une information précieuse pour l'équipe.`;
 
 const SCHEMA = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Markdown, sans préambule, sans texte autour. Structure exacte :
 {
@@ -686,6 +738,9 @@ const SCHEMA = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Mark
       "aime": "ce qui lui parle, 1-2 phrases",
       "deteste": "ce qui pourrait le faire décrocher, 1-2 phrases",
       "question": "la question telle qu'il la formulerait lui-même",
+      "objection": "son objection la plus dure, formulée franchement. Ce qu'il dirait si personne ne l'écoutait poliment.",
+      "jeChangerais": "ce qu'il changerait concrètement pour que ça marche mieux pour lui. Un changement précis et actionnable, pas un principe général.",
+      "maVersion": "sa version à lui : l'angle, le format ou le traitement qu'il préférerait à la place. Une ou deux phrases, formulé comme une proposition de production.",
       "partage": "faible | moyen | fort",
       "userNeeds": ["user needs activés"],
       "plateforme": "TikTok | Instagram | YouTube | Snapchat",
@@ -698,7 +753,8 @@ const SCHEMA = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Mark
     "plateforme": "quelle plateforme est la plus cohérente et pourquoi, 1-2 phrases",
     "risques": ["ce qui pourrait faire décrocher"],
     "opportunites": ["comment renforcer le concept"],
-    "reco": "recommandation éditoriale honnête : est-ce très Tataki, qu'est-ce qui manque, quels personas sont oubliés, plutôt TikTok/Instagram/YouTube/Snapchat, comment le rendre plus fort. 4-6 phrases."
+    "contreProposition": "la version alternative du concept que le panel défendrait, en synthétisant les propositions des personas. 2-4 phrases, formulée comme un vrai pitch de production.",
+    "reco": "recommandation éditoriale honnête et sans complaisance : est-ce vraiment très Tataki ou est-ce qu'on se rassure, qu'est-ce qui manque, quels personas sont oubliés, plutôt TikTok/Instagram/YouTube/Snapchat, et le point de désaccord le plus intéressant du panel. 4-6 phrases."
   }
 }
 Inclus TOUS les personas fournis dans "personas", y compris ceux notés 1 ou 2 (dans ce cas garde les champs courts).`;
@@ -712,24 +768,27 @@ const MODE_INSTRUCTIONS = {
 Chaque persona répond directement à la question posée, à la première personne, avec sa propre voix, son vocabulaire et ses tics de langage. Pas de langue de bois, pas de réponse lisse.
 Structure ta réponse ainsi, en Markdown :
 ## Prénom — Rôle
-Sa réponse (3-6 phrases, à la première personne).
+Sa réponse (3-6 phrases, à la première personne). Il doit dire ce qu'il pense vraiment, y compris ce qui fâche.
+**Ce qu'il voudrait à la place :** ce qu'il aimerait voir, concrètement, sur ce sujet.
 **Ce que ça dit à l'équipe :** une ligne d'analyse éditoriale à destination de Tataki.
-Termine par une section "## Ce qu'il faut en retenir" : 3 à 5 points d'enseignements concrets pour l'équipe éditoriale.`,
+Termine par une section "## Ce qu'il faut en retenir" : 3 à 5 points d'enseignements concrets, dont au moins un qui remet en question une habitude de l'équipe.`,
 
   angles: `# TÂCHE
-Pour chaque persona, propose 3 angles éditoriaux distincts sur le sujet soumis. Chaque angle doit être formulé comme un vrai angle de production, pas comme une thématique vague.
+Pour chaque persona, propose 3 angles éditoriaux distincts sur le sujet soumis. Chaque angle doit être formulé comme un vrai angle de production, pas comme une thématique vague. Les angles doivent venir de ce que le persona voudrait voir, pas de ce qu'un média voudrait produire.
 Structure ta réponse en Markdown :
 ## Prénom — Rôle
 Pour chaque angle : un titre d'angle en gras, une phrase d'explication, l'accroche des 3 premières secondes entre guillemets, la plateforme et le format recommandés.
-Termine par "## Les angles à garder" : les 3 angles les plus forts tous personas confondus, et pourquoi.`,
+Ajoute pour chaque persona une ligne **L'angle qu'il ne veut surtout pas voir :** le traitement attendu et déjà vu qui le ferait décrocher.
+Termine par "## Les angles à garder" : les 3 angles les plus forts tous personas confondus, et pourquoi. Puis "## L'angle le plus risqué" : celui qui pourrait très bien marcher ou complètement rater, et à quelle condition.`,
 
   cm: `# TÂCHE
-Analyse l'élément soumis (post, légende, réponse en commentaire, ton) du point de vue de chaque persona.
+Analyse l'élément soumis (post, légende, réponse en commentaire, ton) du point de vue de chaque persona. Sois sévère : c'est un test, pas une validation.
 Structure ta réponse en Markdown :
 ## Prénom — Rôle
 - **Ce qu'il comprend au premier coup d'œil**
 - **Ce qui accroche / ce qui bloque**
 - **Ce qu'il commenterait, textuellement** (entre guillemets, avec son vrai registre)
+- **Comment il l'aurait écrit** (sa propre version de la formulation)
 Termine par "## Réécriture recommandée" : une version améliorée de l'élément soumis, puis "## Points de vigilance CM" : 3 à 5 points.`
 };
 
@@ -749,7 +808,9 @@ function buildPrompt(ids, mode, question){
    ============================================================ */
 const S = {
   selected: PERSONAS.map(p=>p.id),
-  mode: "concept"
+  mode: "concept",
+  thread: [],
+  subject: ""
 };
 const $ = s=>document.querySelector(s);
 
@@ -863,7 +924,7 @@ function renderExamples(){
 /* ============================================================
    APPEL MODÈLE
    ============================================================ */
-async function callModel(prompt){
+async function callModel(messages){
   const proxy = load("tk_proxy") || CONFIG.PROXY_URL;
   const key   = load("tk_key");
   const model = load("tk_model") || CONFIG.MODEL;
@@ -875,7 +936,7 @@ async function callModel(prompt){
   const body = {
     model,
     max_tokens: CONFIG.MAX_TOKENS,
-    messages:[{role:"user", content: prompt}]
+    messages
   };
 
   let url, headers;
@@ -960,6 +1021,9 @@ function renderConcept(j){
         <div class="f"><b>Ce qu'il déteste</b><p>${esc(a.deteste||"—")}</p></div>
         <div class="f"><b>Sa question</b><p>${esc(a.question||"—")}</p></div>
       </div>
+      ${a.objection?`<div class="challenge"><b>Son objection</b><p>${esc(a.objection)}</p></div>`:""}
+      ${a.jeChangerais?`<div class="challenge"><b>Ce qu'il changerait</b><p>${esc(a.jeChangerais)}</p></div>`:""}
+      ${a.maVersion?`<div class="challenge propose"><b>Sa version</b><p>${esc(a.maVersion)}</p></div>`:""}
       <div class="tags">
         <span class="tag hi">${esc(a.plateforme||"—")}</span>
         <span class="tag">${esc(a.moment||"—")}</span>
@@ -979,6 +1043,7 @@ function renderConcept(j){
   const synth = `<div class="synth">
     <h3>🎯 Recommandation éditoriale</h3>
     <p>${esc(s.reco||"")}</p>
+    ${s.contreProposition?`<h4>🔁 La contre-proposition du panel</h4><p>${esc(s.contreProposition)}</p>`:""}
     <h4>🧠 User needs activés</h4><p>${esc(s.userNeeds||"—")}</p>
     <h4>📱 Plateforme idéale</h4><p>${esc(s.plateforme||"—")}</p>
     <h4>⚠️ Risques</h4><ul>${(s.risques||[]).map(x=>`<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ul>
@@ -989,8 +1054,32 @@ function renderConcept(j){
 }
 
 function renderOut(html){
+  const names = PERSONAS.filter(p=>S.selected.includes(p.id)).map(p=>p.name).join(", ");
   $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2>
-    <button class="ghost" id="btnCopyRes">Copier le résultat</button></div>` + html;
+    <button class="ghost" id="btnCopyRes">Copier le résultat</button></div>` + html +
+    `<div id="thread"></div>
+     <div class="follow">
+       <div class="follow-head">Continuer avec le même panel</div>
+       <p class="follow-sub">${esc(names)} gardent en mémoire le sujet et ce qu'ils ont déjà dit. Creuse un point, demande-leur d'arbitrer, ou soumets-leur une version modifiée.</p>
+       <textarea id="followup" placeholder="Ex. : et si on le faisait en 3 épisodes de 8 minutes plutôt qu'en vertical ?"></textarea>
+       <div class="follow-ex" id="followEx"></div>
+       <button class="go small" id="followGo">Relancer</button>
+     </div>`;
+
+  $("#followEx").innerHTML = [
+    "Sur quoi vous n'êtes pas d'accord entre vous ?",
+    "Donnez-moi votre meilleur titre pour ce sujet",
+    "Qu'est-ce qui vous ferait cliquer, concrètement ?",
+    "Et si on changeait de plateforme ?"
+  ].map(t=>`<button class="ex">${t}</button>`).join("");
+  $("#followEx").querySelectorAll(".ex").forEach(b=>{
+    b.addEventListener("click",()=>{ $("#followup").value=b.textContent; $("#followup").focus(); });
+  });
+  $("#followGo").addEventListener("click",relance);
+  $("#followup").addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key==="Enter") relance();
+  });
+
   $("#btnCopyRes")?.addEventListener("click",e=>{
     const txt = $("#out").innerText.replace(/^Réponse du panel\nCopier le résultat\n/,"");
     navigator.clipboard.writeText(txt);
@@ -1015,8 +1104,12 @@ async function run(){
     <div class="loading"><span class="spin"></span> Le panel réfléchit — ${esc(names)}. Une trentaine de secondes.</div>`;
 
   const prompt = buildPrompt(S.selected, S.mode, q);
+  S.thread = [{role:"user", content: prompt}];
+  S.subject = q;
+
   try{
-    const txt = await callModel(prompt);
+    const txt = await callModel(S.thread);
+    S.thread.push({role:"assistant", content: txt});
     if(S.mode==="concept"){
       const j = tryJson(txt);
       renderOut(j && j.personas ? renderConcept(j) : `<div class="md">${miniMd(txt)}</div>`);
@@ -1024,20 +1117,57 @@ async function run(){
       renderOut(`<div class="md">${miniMd(txt)}</div>`);
     }
   }catch(err){
-    let msg;
-    if(err.code==="no-access"){
-      msg = `<b>Pas encore d'accès au modèle</b>Ouvre <em>Réglages</em> et renseigne l'adresse du relais fourni par l'équipe, ou ta propre clé API. Sinon, utilise <em>Copier le prompt</em> et colle-le dans Claude.`;
-    }else if(String(err.code).startsWith("http-401")||String(err.code).startsWith("http-403")){
-      msg = `<b>Accès refusé</b>Message exact renvoyé par le relais :<br><br><code style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-word">${esc(err.message).slice(0,600)}</code>`;
-    }else if(String(err.code).startsWith("http-429")){
-      msg = `<b>Trop de demandes d'un coup</b>Attends une minute et relance le panel.`;
-    }else{
-      msg = `<b>La requête n'a pas abouti</b>${esc(err.message).slice(0,400)}`;
-    }
-    $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2></div><div class="err">${msg}</div>`;
+    S.thread = [];
+    showError(err);
   }finally{
     $("#go").disabled = false;
   }
+}
+
+async function relance(){
+  const q = $("#followup").value.trim();
+  if(!q) { $("#followup").focus(); return; }
+
+  const btn = $("#followGo");
+  btn.disabled = true;
+  $("#followup").value = "";
+
+  const thread = $("#thread");
+  thread.insertAdjacentHTML("beforeend",
+    `<div class="turn"><div class="turn-q"><b>Ta relance</b><p>${esc(q)}</p></div>
+     <div class="loading" id="turnLoad"><span class="spin"></span> Le panel reprend…</div></div>`);
+  thread.lastElementChild.scrollIntoView({behavior:"smooth",block:"nearest"});
+
+  const followPrompt = `${q}
+
+(Rappel : tu restes dans la même consultation, avec les mêmes personas et le même sujet. Chaque persona garde sa voix, sa position et ce qu'il a déjà dit — il peut nuancer ou changer d'avis, mais il doit rester cohérent avec lui-même. Réponds en Markdown, avec un titre "## Prénom — Rôle" par persona concerné, et termine par "## Ce qu'il faut en retenir". Reste exigeant : continue de challenger plutôt que de valider.)`;
+
+  S.thread.push({role:"user", content: followPrompt});
+
+  try{
+    const txt = await callModel(S.thread);
+    S.thread.push({role:"assistant", content: txt});
+    $("#turnLoad").outerHTML = `<div class="md">${miniMd(txt)}</div>`;
+  }catch(err){
+    S.thread.pop();
+    $("#turnLoad").outerHTML = `<div class="err"><b>La relance n'a pas abouti</b>${esc(err.message).slice(0,300)}</div>`;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function showError(err){
+  let msg;
+  if(err.code==="no-access"){
+    msg = `<b>Pas encore d'accès au modèle</b>Ouvre <em>Réglages</em> et renseigne l'adresse du relais fourni par l'équipe, ou ta propre clé API. Sinon, utilise <em>Copier le prompt</em> et colle-le dans Claude.`;
+  }else if(String(err.code).startsWith("http-401")||String(err.code).startsWith("http-403")){
+    msg = `<b>Accès refusé</b>Message exact renvoyé par le relais :<br><br><code style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-word">${esc(err.message).slice(0,600)}</code>`;
+  }else if(String(err.code).startsWith("http-429")){
+    msg = `<b>Trop de demandes d'un coup</b>Attends une minute et relance le panel.`;
+  }else{
+    msg = `<b>La requête n'a pas abouti</b>${esc(err.message).slice(0,400)}`;
+  }
+  $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2></div><div class="err">${msg}</div>`;
 }
 
 /* ============================================================
