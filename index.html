@@ -497,7 +497,7 @@ textarea#q::placeholder{color:var(--ink-dim)}
 const CONFIG = {
   PROXY_URL: "https://tataki-panel.cezanne-trummer.workers.dev",
   MODEL: "claude-sonnet-5",
-  MAX_TOKENS: 8000
+  MAX_TOKENS: 16000
 };
 
 /* ============================================================
@@ -988,11 +988,44 @@ function miniMd(txt){
   return html;
 }
 
+/* Referme un JSON tronqué : si la réponse a été coupée en cours d'écriture,
+   on ferme proprement les structures ouvertes pour sauver ce qui est complet. */
+function closeJson(s){
+  let inStr=false, esc=false;
+  const stack=[];
+  for(const c of s){
+    if(esc){ esc=false; continue; }
+    if(c==="\\" && inStr){ esc=true; continue; }
+    if(c==='"'){ inStr=!inStr; continue; }
+    if(inStr) continue;
+    if(c==="{"||c==="[") stack.push(c);
+    else if(c==="}"||c==="]") stack.pop();
+  }
+  let out = s;
+  if(inStr) out += '"';
+  out = out.replace(/,\s*$/,"");
+  // une paire clé/valeur laissée à moitié : on la retire
+  out = out.replace(/,\s*"[^"]*"\s*:\s*$/,"");
+  while(stack.length) out += stack.pop()==="{" ? "}" : "]";
+  return out;
+}
+
 function tryJson(txt){
   const clean = txt.replace(/```json/gi,"").replace(/```/g,"").trim();
-  const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
-  if(a<0||b<0) return null;
-  try{ return JSON.parse(clean.slice(a,b+1)); }catch(e){ return null; }
+  const a = clean.indexOf("{");
+  if(a<0) return null;
+  const body = clean.slice(a);
+
+  const b = body.lastIndexOf("}");
+  if(b>0){ try{ return JSON.parse(body.slice(0,b+1)); }catch(e){} }
+
+  try{ return JSON.parse(closeJson(body)); }catch(e){}
+
+  // dernier recours : on retire le dernier persona incomplet et on referme
+  const cut = body.lastIndexOf("},");
+  if(cut>0){ try{ return JSON.parse(closeJson(body.slice(0,cut+1))); }catch(e){} }
+
+  return null;
 }
 
 function renderConcept(j){
@@ -1114,7 +1147,13 @@ async function run(){
     S.thread.push({role:"assistant", content: txt});
     if(S.mode==="concept"){
       const j = tryJson(txt);
-      renderOut(j && j.personas ? renderConcept(j) : `<div class="md">${miniMd(txt)}</div>`);
+      if(j && j.personas){
+        renderOut(renderConcept(j));
+      }else if(txt.trim().startsWith("{")||txt.includes('"personas"')){
+        renderOut(`<div class="err"><b>Réponse illisible</b>Le panel a bien répondu, mais sa réponse est arrivée incomplète et n'a pas pu être mise en forme. Relance la consultation, ou réduis le nombre de personas sélectionnés.</div>`);
+      }else{
+        renderOut(`<div class="md">${miniMd(txt)}</div>`);
+      }
     }else{
       renderOut(`<div class="md">${miniMd(txt)}</div>`);
     }
