@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel virtuel — Tataki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS — modifie ici pour coller exactement à la DA Tataki
+   ============================================================ */
+:root{
+  --bg:#000000;
+  --surface:#0F0F0F;
+  --surface-2:#161616;
+  --line:#2A2A2A;
+  --line-soft:#1C1C1C;
+  --ink:#FFFFFF;
+  --ink-muted:#A0A0A0;
+  --ink-dim:#6E6E6E;
+  --accent:#FFE500;          /* jaune Tataki */
+  --accent-ink:#000000;
+
+  /* Palette Tataki stricte : les personas partagent le jaune,
+     ils se distinguent par le nom et l'indice, pas par la couleur. */
+  --lea:#FFE500;
+  --noah:#FFE500;
+  --ines:#FFE500;
+  --yanis:#FFE500;
+  --zoe:#FFE500;
+  --theo:#FFE500;
+  --camille:#FFE500;
+
+  --display:'Anton', Impact, sans-serif;
+  --body:'Inter Tight', system-ui, -apple-system, sans-serif;
+  --mono:'DM Mono', ui-monospace, monospace;
+
+  --r:14px;
+  --pad:clamp(16px,4vw,40px);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 var(--pad) 96px}
+
+/* ---------- HEADER ---------- */
+.masthead{
+  border-bottom:1px solid var(--line);
+  margin-bottom:40px;
+  padding:28px 0 22px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+}
+.masthead h1{
+  font-family:var(--display);
+  font-size:clamp(34px,7vw,64px);
+  line-height:.92;
+  letter-spacing:.01em;
+  text-transform:uppercase;
+  margin:0;
+}
+.masthead h1 em{font-style:normal;color:var(--accent)}
+.masthead p{
+  margin:8px 0 0;color:var(--ink-muted);font-size:14.5px;max-width:48ch;
+}
+.mast-right{display:flex;gap:8px;align-items:center}
+
+.ghost{
+  background:transparent;border:1px solid var(--line);color:var(--ink-muted);
+  border-radius:999px;padding:8px 14px;font-size:12.5px;cursor:pointer;
+  transition:border-color .15s,color .15s;
+}
+.ghost:hover{border-color:var(--ink-muted);color:var(--ink)}
+
+/* ---------- STEPS ---------- */
+.step{margin-bottom:38px}
+.step-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.step-num{
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+  color:var(--accent);text-transform:uppercase;
+}
+.step-head h2{
+  font-family:var(--display);text-transform:uppercase;font-size:19px;
+  letter-spacing:.02em;margin:0;font-weight:400;
+}
+.step-hint{color:var(--ink-dim);font-size:13px;margin-left:auto}
+
+/* ---------- SELECTION PANEL ---------- */
+.select-all{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;
+}
+.pill{
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-muted);
+  border-radius:999px;padding:9px 16px;font-size:13px;cursor:pointer;
+  transition:.15s;
+}
+.pill:hover{border-color:var(--ink-dim);color:var(--ink)}
+.pill.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+
+.panel-grid{
+  display:grid;gap:10px;
+  grid-template-columns:repeat(auto-fill,minmax(212px,1fr));
+}
+.pcard{
+  position:relative;text-align:left;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);padding:14px 13px 52px;
+  transition:border-color .15s,background .15s,transform .12s;
+  color:var(--ink);display:block;
+}
+.pcard .nm,.pcard .rl,.pcard .test,.pcard .plats{display:block}
+.pcard .test{
+  font-size:12.5px;line-height:1.4;color:var(--ink);
+  margin-top:9px;padding-top:9px;border-top:1px solid var(--line-soft);
+}
+.plats{margin-top:10px}
+.plat{
+  display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
+  text-transform:uppercase;border:1px solid var(--line);border-radius:3px;
+  padding:2px 5px;margin:0 3px 3px 0;color:var(--ink-dim);
+}
+.plat.hi{border-color:var(--accent);color:var(--accent);font-weight:500}
+.fiche-btn{
+  position:absolute;left:13px;bottom:13px;
+  background:none;border:1px solid var(--line);color:var(--ink-muted);
+  border-radius:999px;padding:5px 12px;font-size:11.5px;cursor:pointer;
+  font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;
+}
+.fiche-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.fiche-head{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.fiche-head .dot{
+  width:34px;height:34px;border-radius:50%;background:var(--accent);flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:17px;color:#000;
+}
+.fiche-head b{display:block;font-size:17px;font-weight:700;line-height:1.2}
+.fiche-head span span{color:var(--ink-muted);font-size:12.5px}
+#ficheBody .quote{font-size:18px;margin-bottom:18px}
+#ficheBody .f{margin-bottom:14px}
+#ficheBody .f p{color:var(--ink-muted)}
+.pcard:hover{transform:translateY(-2px);border-color:var(--ink-dim)}
+.pcard[aria-pressed="true"]{
+  border-color:var(--pc);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 13%,var(--surface)),var(--surface));
+}
+.pcard .dot{
+  width:26px;height:26px;border-radius:50%;background:var(--pc);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:14px;color:#000;margin-bottom:10px;
+}
+.pcard .nm{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.pcard .rl{color:var(--ink-muted);font-size:12.5px;line-height:1.35;margin-top:2px}
+.pcard .meta{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);
+  margin-top:9px;letter-spacing:.03em;
+}
+.pcard .check{
+  position:absolute;top:12px;right:12px;width:16px;height:16px;border-radius:50%;
+  border:1px solid var(--line);
+}
+.pcard[aria-pressed="true"] .check{background:var(--pc);border-color:var(--pc)}
+
+.count{
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);margin-top:12px;
+}
+
+/* ---------- MODES ---------- */
+.modes{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.mode{
+  text-align:left;cursor:pointer;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;color:var(--ink);
+  transition:.15s;
+}
+.mode:hover{border-color:var(--ink-dim)}
+.mode[aria-pressed="true"]{border-color:var(--accent);background:var(--surface-2)}
+.mode b{display:block;font-size:14px;font-weight:700;margin-bottom:3px}
+.mode span{display:block;color:var(--ink-muted);font-size:12.5px;line-height:1.4}
+
+/* ---------- INPUT ---------- */
+textarea#q{
+  width:100%;min-height:132px;resize:vertical;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  color:var(--ink);font-family:inherit;font-size:15.5px;line-height:1.55;padding:16px;
+}
+textarea#q:focus{outline:none;border-color:var(--accent)}
+textarea#q::placeholder{color:var(--ink-dim)}
+
+.examples{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.ex{
+  background:none;border:1px dashed var(--line);color:var(--ink-dim);
+  border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;
+}
+.ex:hover{color:var(--ink);border-color:var(--ink-dim);border-style:solid}
+
+.actions{display:flex;gap:10px;align-items:center;margin-top:22px;flex-wrap:wrap}
+.go{
+  background:var(--accent);color:var(--accent-ink);border:none;
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;
+  font-size:17px;padding:15px 30px;border-radius:999px;cursor:pointer;
+  transition:transform .12s,filter .15s;
+}
+.go:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.08)}
+.go:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- RESULTS ---------- */
+#out{margin-top:8px}
+.loading{
+  border:1px solid var(--line);border-radius:var(--r);padding:26px;
+  color:var(--ink-muted);font-size:14px;display:flex;align-items:center;gap:14px;
+}
+.spin{
+  width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:sp .7s linear infinite;flex:none;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.err{
+  border:1px solid var(--accent);border-radius:var(--r);padding:18px;
+  background:color-mix(in srgb,var(--accent) 8%,var(--surface));font-size:14px;
+}
+.err b{display:block;margin-bottom:5px;font-size:14.5px}
+
+.res-head{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border-top:1px solid var(--line);padding-top:26px;margin-top:34px;margin-bottom:20px;
+}
+.res-head h2{font-family:var(--display);text-transform:uppercase;font-size:22px;margin:0;font-weight:400}
+
+/* persona answer card */
+.ans{
+  border:1px solid var(--line);border-left:3px solid var(--pc);
+  border-radius:var(--r);background:var(--surface);
+  padding:20px 20px 18px;margin-bottom:14px;
+}
+.ans-top{display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
+.ans-top .dot{
+  width:32px;height:32px;border-radius:50%;background:var(--pc);flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:16px;color:#000;
+}
+.ans-top .who b{display:block;font-size:16px;font-weight:700;line-height:1.2}
+.ans-top .who span{color:var(--ink-muted);font-size:12.5px}
+.score{
+  margin-left:auto;font-family:var(--display);font-size:30px;line-height:1;color:var(--pc);
+}
+.score small{font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-left:2px}
+
+.quote{
+  font-family:var(--display);font-size:clamp(17px,2.6vw,23px);line-height:1.24;
+  letter-spacing:.005em;margin:0 0 16px;color:var(--ink);
+}
+.quote::before{content:"« ";color:var(--pc)}
+.quote::after{content:" »";color:var(--pc)}
+
+.fields{display:grid;gap:13px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.f b{
+  display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-dim);margin-bottom:4px;
+}
+.f p{margin:0;font-size:14px;line-height:1.5;color:var(--ink)}
+
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.tag{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink-muted);
+}
+.tag.hi{border-color:var(--pc);color:var(--pc)}
+
+/* synthesis */
+.synth{
+  border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2);
+  padding:22px;margin-top:22px;
+}
+.synth h3{
+  font-family:var(--display);text-transform:uppercase;font-size:16px;margin:0 0 12px;font-weight:400;
+}
+.synth h4{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-dim);margin:18px 0 6px;
+}
+.synth ul{margin:0;padding-left:18px}
+.synth li{font-size:14px;margin-bottom:4px}
+.synth p{font-size:14.5px;margin:0}
+
+/* score bar table */
+.recap{margin-top:4px}
+.recap-row{display:flex;align-items:center;gap:11px;margin-bottom:7px}
+.recap-row .nmm{width:82px;flex:none;font-size:13px;color:var(--ink-muted)}
+.recap-row .bar{flex:1;height:8px;background:var(--line-soft);border-radius:999px;overflow:hidden}
+.recap-row .bar i{display:block;height:100%;background:var(--pc);border-radius:999px;
+  animation:grow .5s cubic-bezier(.2,.8,.3,1) both}
+@keyframes grow{from{width:0}}
+.recap-row .vv{font-family:var(--mono);font-size:12px;color:var(--ink-dim);width:26px;text-align:right}
+
+/* free text render */
+.md{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:22px}
+.md h2,.md h3{font-family:var(--display);text-transform:uppercase;font-weight:400;letter-spacing:.02em}
+.md h2{font-size:19px;margin:22px 0 8px}
+.md h3{font-size:15px;margin:18px 0 6px;color:var(--ink-muted)}
+.md h2:first-child,.md h3:first-child{margin-top:0}
+.md p{font-size:14.8px;line-height:1.62;margin:0 0 11px}
+.md ul{margin:0 0 12px;padding-left:19px}
+.md li{font-size:14.8px;line-height:1.55;margin-bottom:4px}
+.md strong{color:#fff}
+.md hr{border:none;border-top:1px solid var(--line);margin:20px 0}
+
+/* ---------- MODAL ---------- */
+.mask{
+  position:fixed;inset:0;background:rgba(6,6,9,.78);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;
+}
+.mask[hidden]{display:none}
+.modal{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  max-width:520px;width:100%;padding:26px;max-height:88vh;overflow:auto;
+}
+.modal h3{font-family:var(--display);text-transform:uppercase;font-size:19px;margin:0 0 6px;font-weight:400}
+.modal p{color:var(--ink-muted);font-size:13.5px;line-height:1.5;margin:0 0 16px}
+.modal label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-dim);margin-bottom:6px}
+.modal input,.modal textarea{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  color:var(--ink);padding:11px 13px;font-family:var(--mono);font-size:13px;margin-bottom:14px;
+}
+.modal input:focus,.modal textarea:focus{outline:none;border-color:var(--accent)}
+.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:6px}
+
+.foot{
+  border-top:1px solid var(--line);margin-top:56px;padding-top:18px;
+  color:var(--ink-dim);font-size:12px;font-family:var(--mono);line-height:1.7;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+@media (max-width:640px){
+  .step-hint{margin-left:0;width:100%}
+  .fields{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1>Panel<br>virtuel <em>Tataki</em></h1>
+      <p>Sept états motivationnels de l'audience romande des moins de 26 ans. Soumets un concept, un angle, un post ou une question — le panel répond.</p>
+    </div>
+    <div class="mast-right">
+      <button class="ghost" id="btnPrompt">Copier le prompt</button>
+      <button class="ghost" id="btnSettings">Réglages</button>
+    </div>
+  </header>
+
+  <!-- 1 — QUI -->
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>Qui tu interroges</h2>
+      <span class="step-hint">Clique une carte pour la sélectionner · « Fiche » pour le détail</span>
+    </div>
+    <div class="select-all" id="presets"></div>
+    <div class="panel-grid" id="grid"></div>
+    <div class="count" id="count"></div>
+  </section>
+
+  <!-- 2 — QUOI -->
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>Ce que tu leur demandes</h2>
+    </div>
+    <div class="modes" id="modes"></div>
+  </section>
+
+  <!-- 3 — SUJET -->
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>Ton sujet</h2>
+    </div>
+    <textarea id="q" placeholder="Ex. : une série de 4 épisodes sur des jeunes qui reprennent la ferme familiale, format vertical 3-5 min."></textarea>
+    <div class="examples" id="examples"></div>
+    <div class="actions">
+      <button class="go" id="go">Lancer le panel</button>
+      <span class="count" id="status"></span>
+    </div>
+  </section>
+
+  <div id="out"></div>
+
+  <div class="foot">
+    Sources — Étude motivationnelle Ipsos-RTS 2024 · Qualinsight 17-24 ans · Reuters Institute · EBU · JAMES · Positionnement Tataki 2026<br>
+    Les personas sont des états motivationnels, pas des personnes. Une même personne peut passer de l'un à l'autre dans la journée.
+  </div>
+</div>
+
+<!-- MODAL RÉGLAGES -->
+<div class="mask" id="mask" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+    <div id="paneSettings">
+      <h3 id="mtitle">Réglages</h3>
+      <p>Le panel a besoin d'un accès au modèle. Si l'équipe a mis en place un relais (proxy), l'adresse est déjà pré-remplie et tu n'as rien à faire. Sinon, colle ta propre clé Anthropic — elle reste dans ton navigateur et n'est jamais envoyée ailleurs.</p>
+      <label for="inProxy">Adresse du relais (optionnel)</label>
+      <input id="inProxy" type="text" placeholder="https://tataki-panel.xxx.workers.dev">
+      <label for="inKey">Clé API Anthropic (si pas de relais)</label>
+      <input id="inKey" type="password" placeholder="sk-ant-...">
+      <label for="inModel">Modèle</label>
+      <input id="inModel" type="text">
+      <div class="modal-actions">
+        <button class="ghost" id="mClose">Fermer</button>
+        <button class="pill on" id="mSave">Enregistrer</button>
+      </div>
+    </div>
+    <div id="panePrompt" hidden>
+      <h3>Prompt complet</h3>
+      <p>À coller dans Claude, ChatGPT ou tout autre assistant. Il contient le cadrage, les personas sélectionnés et ta question.</p>
+      <textarea id="promptBox" rows="12" readonly></textarea>
+      <div class="modal-actions">
+        <button class="ghost" id="pClose">Fermer</button>
+        <button class="pill on" id="pCopy">Copier</button>
+      </div>
+    </div>
+    <div id="paneFiche" hidden>
+      <div id="ficheBody"></div>
+      <div class="modal-actions">
+        <button class="ghost" id="fClose">Fermer</button>
+        <button class="pill on" id="ficheAdd">Ajouter au panel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — pré-remplis PROXY_URL et tes collègues n'ont rien à régler
+   ============================================================ */
+const CONFIG = {
+  PROXY_URL: "https://tataki-panel.cezanne-trummer.workers.dev",
+  MODEL: "claude-sonnet-5",
+  MAX_TOKENS: 8000
+};
+
+/* ============================================================
+   PERSONAS
+   ============================================================ */
+const PERSONAS = [
+  {
+    id:"lea", name:"Léa", role:"La Connectrice", color:"var(--lea)", init:"L",
+    meta:"16 ans · Lausanne",
+    test:"Le test du partage : est-ce qu'on s'envoie ça entre amies ?",
+    plats:[["Snap",3],["Insta",2],["TikTok",2],["YT",1]],
+    fiche:{
+      motivations:"Interagir / échanger · S'inspirer",
+      cherche:"Des témoignages, des expériences vécues, des micro-trottoirs, des contenus qu'elle peut renvoyer à ses amies.",
+      deteste:"Les experts qui parlent longtemps, le ton institutionnel, le jargon.",
+      utilite:"Interroge-la quand tu veux savoir si un contenu va circuler tout seul. C'est ton meilleur indicateur de viralité organique et de conversation entre pairs.",
+      citation:"J'aime quand ça parle de trucs qu'on vit vraiment."
+    },
+    sheet:`LÉA — "La Connectrice", 16 ans, gymnase à Lausanne.
+Plateformes : Snapchat +++, Instagram ++, TikTok ++, YouTube +.
+Motivations : interagir/échanger, s'inspirer.
+Citation : "J'aime quand ça parle de trucs qu'on vit vraiment."
+Recherche : témoignages, expériences vécues, micro-trottoirs, contenus partageables.
+Déteste : les experts qui parlent longtemps, le ton institutionnel, le jargon.
+Si un contenu lui plaît, elle l'envoie à ses amies.`
+  },
+  {
+    id:"noah", name:"Noah", role:"L'Explorateur", color:"var(--noah)", init:"N",
+    meta:"18 ans · Fribourg",
+    test:"Le test de l'immersion : est-ce qu'on apprend sans avoir l'impression d'un cours ?",
+    plats:[["YT",3],["Insta",2],["Podcast",2],["TikTok",1]],
+    fiche:{
+      motivations:"S'inspirer · Apprendre",
+      cherche:"Des immersions, des expériences, des témoignages, des reportages. Il veut vivre le sujet, pas se le faire expliquer.",
+      deteste:"Les débats abstraits, les contenus moralisateurs.",
+      utilite:"Interroge-le pour valider un format long, une immersion ou un reportage. C'est le profil qui te dira si ton sujet tient la distance sur YouTube.",
+      citation:"J'aime apprendre sans avoir l'impression d'être à l'école."
+    },
+    sheet:`NOAH — "L'Explorateur", 18 ans, apprenti médiamaticien à Fribourg.
+Plateformes : YouTube +++, Instagram ++, TikTok +, podcasts ++.
+Motivations : s'inspirer, apprendre.
+Citation : "J'aime apprendre sans avoir l'impression d'être à l'école."
+Recherche : immersions, expériences, témoignages, reportages.
+Déteste : les débats abstraits, les contenus moralisateurs.`
+  },
+  {
+    id:"ines", name:"Inès", role:"La Scroll Addict", color:"var(--ines)", init:"I",
+    meta:"15 ans · Genève",
+    test:"Le test des 3 secondes : est-ce que ça accroche avant le scroll ?",
+    plats:[["TikTok",3],["Snap",2],["Insta",1]],
+    fiche:{
+      motivations:"Se divertir · S'évader",
+      cherche:"De l'humour, des émotions, des surprises, des trends. Une accroche immédiate.",
+      deteste:"Les vidéos lentes, le ton institutionnel.",
+      utilite:"Interroge-la sur tes trois premières secondes, tes accroches et tes formats verticaux. C'est le filtre le plus impitoyable du panel — si ça passe chez elle, ça passe partout.",
+      citation:"Si ça m'accroche pas en trois secondes je pars."
+    },
+    sheet:`INÈS — "La Scroll Addict", 15 ans, cycle d'orientation à Genève.
+Plateformes : TikTok +++, Snapchat ++, Instagram +.
+Motivations : se divertir, s'évader.
+Citation : "Si ça m'accroche pas en trois secondes je pars."
+Recherche : humour, émotions, surprises, trends.
+Déteste : les vidéos lentes, le ton institutionnel.`
+  },
+  {
+    id:"yanis", name:"Yanis", role:"Le Chercheur de sens", color:"var(--yanis)", init:"Y",
+    meta:"20 ans · Genève",
+    test:"Le test de la nuance : est-ce que ça explique vraiment, ou ça survole ?",
+    plats:[["YT",3],["Podcast",2],["Insta",2]],
+    fiche:{
+      motivations:"S'informer · Apprendre · S'inspirer",
+      cherche:"De la nuance, du contexte, des réponses. Il veut comprendre les mécanismes, pas seulement les faits.",
+      deteste:"Le sensationnalisme, le simplisme.",
+      utilite:"Interroge-le sur les sujets de société, les sujets politiques ou complexes. C'est lui qui repérera un raccourci, un angle trop simple ou un titre racoleur.",
+      citation:"Je veux comprendre pourquoi."
+    },
+    sheet:`YANIS — "Le Chercheur de sens", 20 ans, étudiant à Genève.
+Plateformes : YouTube +++, podcasts ++, Instagram ++.
+Motivations : s'informer, apprendre, s'inspirer.
+Citation : "Je veux comprendre pourquoi."
+Recherche : de la nuance, du contexte, des réponses.
+Déteste : le sensationnalisme, le simplisme.`
+  },
+  {
+    id:"zoe", name:"Zoé", role:"La Sceptique numérique", color:"var(--zoe)", init:"Z",
+    meta:"22 ans · Neuchâtel",
+    test:"Le test de la sincérité : est-ce que ça sonne vrai ou fabriqué ?",
+    plats:[["Insta",2],["YT",2],["Podcast",2]],
+    fiche:{
+      motivations:"Se réconforter · Apprendre",
+      cherche:"De l'authenticité, de la sincérité, des contenus humains. Qu'on lui parle normalement.",
+      deteste:"Les injonctions, le bullshit, les contenus artificiels.",
+      utilite:"Interroge-la sur ton ton et ta posture éditoriale. C'est le détecteur de faux du panel : elle repérera une intention marketing, une leçon de morale ou un contenu qui sonne creux.",
+      citation:"J'ai juste envie qu'on me parle normalement."
+    },
+    sheet:`ZOÉ — "La Sceptique numérique", 22 ans, étudiante HES à Neuchâtel.
+Plateformes : Instagram ++, YouTube ++, podcasts ++.
+Motivations : se réconforter, apprendre.
+Citation : "J'ai juste envie qu'on me parle normalement."
+Recherche : authenticité, sincérité, contenus humains.
+Déteste : les injonctions, le bullshit, les contenus artificiels.`
+  },
+  {
+    id:"theo", name:"Théo", role:"L'Ancré", color:"var(--theo)", init:"T",
+    meta:"24 ans · Vallée de Joux",
+    test:"Le test du hors-ville : est-ce qu'on parle encore à ceux qui ne vivent pas à Lausanne ou Genève ?",
+    plats:[["YT",3],["TikTok",2],["Snap",2],["Insta",1]],
+    fiche:{
+      motivations:"Se divertir · S'évader · Apprendre (sur du très concret)",
+      cherche:"Des histoires vraies, des reportages de terrain, de l'aventure, de l'humour, des défis, des gens normaux. Immersions, métiers, agriculture, montagne, mécanique.",
+      deteste:"Le moralisme, le militantisme, le ton parisien ou trop urbain, le jargon universitaire, le sentiment d'être jugé.",
+      utilite:"Interroge-le pour tester si ton contenu sort de la bulle urbaine. Public RTS fragile voire réticent : c'est le profil le plus difficile à convaincre du panel, et le plus révélateur d'un angle donneur de leçons.",
+      citation:"J'ai pas besoin qu'on m'explique comment vivre. J'aime juste voir des gens vrais et comprendre comment ils vivent."
+    },
+    sheet:`THÉO — "L'Ancré", 24 ans, Vallée de Joux (VD), mécatronicien agricole.
+Vit encore chez ses parents ou dans un appartement au village. Passionné de VTT, ski, pêche et mécanique.
+Famille de public RTS : fragile voire réticent. Vote : UDC, Le Centre, abstention ou sans opinion très affirmée.
+Motivations : se divertir, s'évader, apprendre (sur des sujets très concrets).
+Plateformes : YouTube +++, TikTok ++, Snapchat ++, Instagram +, podcasts -.
+Créateurs suivis : Le Grand JD, GMK, Inoxtag, Squeezie, chaînes voitures/bricolage, vidéos de chasse, pêche, montagne, mécanique.
+Rapport aux médias : il n'a rien contre la RTS, mais il a l'impression que "les médias parlent toujours des gens des villes". Il ne se sent pas représenté. Il déteste qu'on lui donne l'impression qu'il est en retard, moins ouvert ou moins éduqué.
+Préoccupations : le coût de la vie, trouver un logement sans devoir partir à Lausanne, garder une qualité de vie hors ville, l'avenir des métiers manuels, les traditions (chasse, fêtes de village, montagne, rapport à la nature).
+Ce qui l'empêche de dormir : "Est-ce que je vais pouvoir gagner correctement ma vie ?", "Est-ce qu'on nous écoute encore ?", "Pourquoi les gens des villes pensent toujours qu'ils savent mieux ?", "Est-ce qu'on pourra encore se permettre d'avoir une maison ?"
+Recherche : histoires vraies, reportages de terrain, aventures, humour, défis, gens normaux.
+Réagit très positivement : immersions, métiers, agriculture, animaux, montagne, voitures, défis physiques, histoires de vie.
+Réagit très négativement : moralisme, militantisme, ton parisien ou trop urbain, jargon universitaire, sentiment d'être jugé.
+Formats préférés : immersions, reportages terrain, défis, formats aventure, témoignages YouTube.
+Rapport à Tataki : il pourrait aimer Tataki, mais seulement si Tataki ne donne pas l'impression d'être un média fait uniquement par et pour les Lausannois et Genevois.
+Citation : "J'ai pas besoin qu'on m'explique comment vivre. J'aime juste voir des gens vrais et comprendre comment ils vivent."`
+  },
+  {
+    id:"camille", name:"Camille", role:"La Jeune Adulte en Transition", color:"var(--camille)", init:"C",
+    meta:"26 ans · Lausanne",
+    test:"Le test de l'utilité : est-ce que ça m'apporte vraiment quelque chose ?",
+    plats:[["Insta",3],["YT",2],["Podcast",2],["TikTok",1]],
+    fiche:{
+      motivations:"Apprendre · Se réconforter · S'informer · S'inspirer",
+      cherche:"Des contenus qui l'aident à comprendre, la rassurent, lui montrent qu'elle n'est pas seule, lui donnent du recul. Témoignages, journalisme de solutions, argent, travail, couple, charge mentale, logement.",
+      deteste:"Les contenus « hustle », le bullshit LinkedIn, les injonctions au bonheur, le ton moralisateur, les contenus artificiels.",
+      utilite:"Interroge-la sur le haut de la cible, les formats longs et les sujets de vie adulte. Consommation intentionnelle : elle ne regarde que ce qui lui rapporte quelque chose, donc elle sanctionne tout contenu qui tourne à vide.",
+      citation:"J'ai plus envie qu'on m'impressionne. J'ai envie qu'on m'aide à comprendre comment vivre."
+    },
+    sheet:`CAMILLE — "La Jeune Adulte en Transition", 26 ans, Lausanne, UX designer dans une PME.
+Vit en couple sans enfants, loue un appartement avec son partenaire.
+Famille de public RTS : futur. Vote : Vert'libéraux, PS ou Vert.
+Motivations : apprendre, se réconforter, s'informer, s'inspirer.
+Plateformes : Instagram +++, YouTube ++, podcasts ++, TikTok +, LinkedIn +.
+Créateurs et médias suivis : HugoDécrypte, Louie Media, Le Point J, Arte, podcasts de société, Thinkerview occasionnellement, Léna Situations (mais moins qu'avant).
+Rapport aux médias : elle a l'impression d'être entre deux mondes. Plus dans le scroll permanent de ses 18 ans, mais pas reconnue dans les médias traditionnels. Consommation intentionnelle : "Si je regarde quelque chose, j'ai envie que ça m'apporte quelque chose."
+Préoccupations : pouvoir d'achat ("Est-ce qu'on pourra un jour acheter quelque chose ?"), équilibre vie privée/travail (elle refuse la culture du burn-out), santé mentale, couple et avenir (faut-il avoir des enfants ?), climat et société (engagée mais épuisée par le catastrophisme), IA et futur du travail.
+Ce qui l'empêche de dormir : "Est-ce que je suis en retard dans ma vie ?", "Est-ce qu'on peut être heureux sans tout réussir ?", "Pourquoi j'ai l'impression que tout le monde gère mieux que moi ?", "Est-ce qu'on aura une retraite ?"
+Recherche : des contenus qui l'aident à comprendre, la rassurent, lui montrent qu'elle n'est pas seule, lui donnent du recul, lui font découvrir d'autres façons de vivre.
+Réagit bien : témoignages, journalisme de solutions, questions existentielles, argent, travail, couple, charge mentale, logement.
+Déteste : les contenus "hustle", le bullshit LinkedIn, les injonctions au bonheur, le ton moralisateur, les contenus artificiels.
+Formats préférés : podcasts, formats YouTube, témoignages, formats type Nuit Blanche, reportages immersifs, conversations longues.
+Citation : "J'ai plus envie qu'on m'impressionne. J'ai envie qu'on m'aide à comprendre comment vivre."`
+  }
+];
+
+const PRESETS = [
+  { label:"Tout le panel (7)", ids:PERSONAS.map(p=>p.id) },
+  { label:"Scroll & formats courts", ids:["ines","lea"] },
+  { label:"Profondeur & formats longs", ids:["noah","yanis","camille"] },
+  { label:"Publics éloignés de la RTS", ids:["theo","ines"] },
+  { label:"Les 15-18", ids:["ines","lea","noah"] },
+  { label:"Les 20-26", ids:["yanis","zoe","theo","camille"] }
+];
+
+const MODES = [
+  { id:"concept", label:"Tester un concept",
+    hint:"Note sur 5 par persona + grille complète + synthèse éditoriale.",
+    ex:["Une série sur des jeunes qui reprennent la ferme familiale",
+        "Un format d'interview de 90 secondes en caméra fixe",
+        "Un carrousel Insta sur le prix des loyers en Suisse romande"] },
+  { id:"reaction", label:"Question libre",
+    hint:"Chaque persona te répond directement, à la première personne.",
+    ex:["Vous suivez quoi comme actu en ce moment ?",
+        "Vous pensez quoi du mot « salaire » dans un titre ?",
+        "Vous regardez encore des vidéos de plus de 10 minutes ?"] },
+  { id:"angles", label:"Trouver un angle",
+    hint:"Trois angles par persona, avec accroche et plateforme.",
+    ex:["La votation sur les rentes",
+        "Le retour du vinyle",
+        "La solitude à 20 ans"] },
+  { id:"cm", label:"Community management",
+    hint:"Comment ils liraient un post, une légende ou une réponse en commentaire.",
+    ex:["Légende : « On a testé la vie sans smartphone pendant 7 jours »",
+        "Réponse type à un commentaire agressif sur le climat",
+        "Un post qui commence par « Spoiler : t'es pas seul·e »"] }
+];
+
+/* ============================================================
+   PROMPT
+   ============================================================ */
+const PREAMBLE = `# RÔLE
+Tu es un consultant éditorial senior spécialisé dans les audiences des 15-25 ans en Suisse romande. Tu travailles avec l'équipe Tataki.
+Ta particularité : tu es capable d'incarner authentiquement plusieurs profils d'audience Tataki. Tu comprends qui ils sont, comment ils consomment, pourquoi ils consomment, ce qu'ils ressentent, ce qui les empêche de dormir, ce qui les ferme ou les ouvre à un contenu.
+Principe fondamental : les personas ne sont pas des personnes figées mais des états motivationnels. Une même personne peut passer d'un persona à un autre au cours de la journée. L'objectif n'est jamais de "forcer" un contenu sur un persona mais de comprendre qui sera touché, pourquoi, avec quel angle, sur quelle plateforme, à quel moment et avec quel ton.
+Base de connaissance : étude motivationnelle Ipsos-RTS 2024, étude Qualinsight 17-24 ans, tendances Reuters, EBU et JAMES, positionnement Tataki 2026.
+
+# POSITIONNEMENT TATAKI
+Tataki est le média de service public qui traduit la société pour les moins de 26 ans en reliant les enjeux du monde à leur vécu pour créer compréhension, résonance et positionnement.
+
+# USER NEEDS DE RÉFÉRENCE
+- Se divertir / rire : décompresser, s'amuser, passer un bon moment.
+- S'informer : comprendre les faits, être au courant, ne rien rater.
+- Apprendre : approfondir, trouver des réponses, progresser.
+- S'inspirer / découvrir : explorer, découvrir d'autres vies, élargir sa vision.
+- Se réconforter : se sentir moins seul, se détendre, être accompagné.
+- Interagir / échanger : partager avec les autres, participer aux conversations.
+- S'évader : ressentir, vibrer, vivre des émotions.
+
+# POSITIONNEMENT DES PLATEFORMES
+- TikTok — capter l'attention, toucher massivement, détecter des sujets. User needs : interagir, se divertir.
+- Instagram — créer de la résonance, porter des témoignages, connecter les communautés. User needs : interagir, apprendre, inspirer.
+- YouTube — approfondir, nuancer, créer de la compréhension. User needs : apprendre, inspirer, s'évader.
+- Snapchat — proximité, appartenance, intimité, communauté. User needs : interagir, se réconforter.
+
+# EXIGENCES DE TON
+Réponds en français de Suisse romande, sans anglicismes marketing inutiles. Sois honnête : si le concept ne parle pas à un persona, dis-le franchement plutôt que de le forcer. Les citations doivent sonner comme de vraies phrases prononcées par ces jeunes, pas comme du copy d'agence.`;
+
+const SCHEMA = `Réponds UNIQUEMENT avec un objet JSON valide, sans balises Markdown, sans préambule, sans texte autour. Structure exacte :
+{
+  "personas": [
+    {
+      "id": "identifiant exact du persona tel que fourni",
+      "score": 1-5,
+      "reaction": "sa première réaction spontanée, 1-2 phrases",
+      "aime": "ce qui lui parle, 1-2 phrases",
+      "deteste": "ce qui pourrait le faire décrocher, 1-2 phrases",
+      "question": "la question telle qu'il la formulerait lui-même",
+      "partage": "faible | moyen | fort",
+      "userNeeds": ["user needs activés"],
+      "plateforme": "TikTok | Instagram | YouTube | Snapchat",
+      "moment": "matin | midi | trajet | soir | week-end | scroll nocturne",
+      "citation": "une phrase qu'il pourrait vraiment prononcer"
+    }
+  ],
+  "synthese": {
+    "userNeeds": "classement des motivations les plus activées, 1-2 phrases",
+    "plateforme": "quelle plateforme est la plus cohérente et pourquoi, 1-2 phrases",
+    "risques": ["ce qui pourrait faire décrocher"],
+    "opportunites": ["comment renforcer le concept"],
+    "reco": "recommandation éditoriale honnête : est-ce très Tataki, qu'est-ce qui manque, quels personas sont oubliés, plutôt TikTok/Instagram/YouTube/Snapchat, comment le rendre plus fort. 4-6 phrases."
+  }
+}
+Inclus TOUS les personas fournis dans "personas", y compris ceux notés 1 ou 2 (dans ce cas garde les champs courts).`;
+
+const MODE_INSTRUCTIONS = {
+  concept: `# TÂCHE
+Évalue le concept soumis pour chacun des personas ci-dessus. Note de 1 à 5 : 5 = persona idéal, 4 = très concerné, 3 = potentiellement concerné, 2 = peu concerné, 1 = non concerné.
+` + SCHEMA,
+
+  reaction: `# TÂCHE
+Chaque persona répond directement à la question posée, à la première personne, avec sa propre voix, son vocabulaire et ses tics de langage. Pas de langue de bois, pas de réponse lisse.
+Structure ta réponse ainsi, en Markdown :
+## Prénom — Rôle
+Sa réponse (3-6 phrases, à la première personne).
+**Ce que ça dit à l'équipe :** une ligne d'analyse éditoriale à destination de Tataki.
+Termine par une section "## Ce qu'il faut en retenir" : 3 à 5 points d'enseignements concrets pour l'équipe éditoriale.`,
+
+  angles: `# TÂCHE
+Pour chaque persona, propose 3 angles éditoriaux distincts sur le sujet soumis. Chaque angle doit être formulé comme un vrai angle de production, pas comme une thématique vague.
+Structure ta réponse en Markdown :
+## Prénom — Rôle
+Pour chaque angle : un titre d'angle en gras, une phrase d'explication, l'accroche des 3 premières secondes entre guillemets, la plateforme et le format recommandés.
+Termine par "## Les angles à garder" : les 3 angles les plus forts tous personas confondus, et pourquoi.`,
+
+  cm: `# TÂCHE
+Analyse l'élément soumis (post, légende, réponse en commentaire, ton) du point de vue de chaque persona.
+Structure ta réponse en Markdown :
+## Prénom — Rôle
+- **Ce qu'il comprend au premier coup d'œil**
+- **Ce qui accroche / ce qui bloque**
+- **Ce qu'il commenterait, textuellement** (entre guillemets, avec son vrai registre)
+Termine par "## Réécriture recommandée" : une version améliorée de l'élément soumis, puis "## Points de vigilance CM" : 3 à 5 points.`
+};
+
+function buildPrompt(ids, mode, question){
+  const sel = PERSONAS.filter(p=>ids.includes(p.id));
+  const sheets = sel.map(p=>`--- PERSONA id="${p.id}" ---\n${p.sheet}`).join("\n\n");
+  const scope = sel.length===PERSONAS.length
+    ? "Tu interroges l'ensemble du panel (7 personas)."
+    : sel.length===1
+      ? `Tu incarnes uniquement ${sel[0].name}. Ne parle pas des autres personas.`
+      : `Tu interroges une sélection de ${sel.length} personas : ${sel.map(p=>p.name).join(", ")}. Ne parle pas des autres.`;
+  return `${PREAMBLE}\n\n# PANEL INTERROGÉ\n${scope}\n\n${sheets}\n\n${MODE_INSTRUCTIONS[mode]}\n\n# SOUMIS PAR L'ÉQUIPE\n${question.trim()}`;
+}
+
+/* ============================================================
+   STATE + UI
+   ============================================================ */
+const S = {
+  selected: PERSONAS.map(p=>p.id),
+  mode: "concept"
+};
+const $ = s=>document.querySelector(s);
+
+function store(k,v){ try{ v===undefined ? null : localStorage.setItem(k,v); }catch(e){} }
+function load(k){ try{ return localStorage.getItem(k)||""; }catch(e){ return ""; } }
+
+/* --- presets --- */
+function renderPresets(){
+  $("#presets").innerHTML = PRESETS.map((p,i)=>
+    `<button class="pill" data-i="${i}">${p.label}</button>`).join("")
+    + `<button class="pill" id="pillNone">Tout désélectionner</button>`;
+  $("#presets").querySelectorAll(".pill[data-i]").forEach(b=>{
+    b.addEventListener("click",()=>{ S.selected=[...PRESETS[b.dataset.i].ids]; syncGrid(); });
+  });
+  $("#pillNone").addEventListener("click",()=>{ S.selected=[]; syncGrid(); });
+}
+
+/* --- persona grid --- */
+function platBadges(p){
+  return `<span class="plats">` + p.plats.map(([n,w])=>
+    `<span class="plat${w===3?" hi":""}">${n}</span>`).join("") + `</span>`;
+}
+
+function renderGrid(){
+  $("#grid").innerHTML = PERSONAS.map(p=>`
+    <div class="pcard" style="--pc:${p.color}" data-id="${p.id}"
+         role="button" tabindex="0" aria-pressed="${S.selected.includes(p.id)}">
+      <span class="check"></span>
+      <span class="dot">${p.init}</span>
+      <span class="nm">${p.name}</span>
+      <span class="rl">${p.role} · ${p.meta}</span>
+      <span class="test">${p.test}</span>
+      ${platBadges(p)}
+      <button class="fiche-btn" data-fiche="${p.id}">Fiche</button>
+    </div>`).join("");
+
+  $("#grid").querySelectorAll(".pcard").forEach(c=>{
+    const toggle = ()=>{
+      const id=c.dataset.id;
+      S.selected = S.selected.includes(id) ? S.selected.filter(x=>x!==id) : [...S.selected,id];
+      syncGrid();
+    };
+    c.addEventListener("click",e=>{ if(e.target.closest(".fiche-btn")) return; toggle(); });
+    c.addEventListener("keydown",e=>{
+      if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); }
+    });
+  });
+  $("#grid").querySelectorAll(".fiche-btn").forEach(b=>{
+    b.addEventListener("click",e=>{ e.stopPropagation(); openFiche(b.dataset.fiche); });
+  });
+  syncGrid();
+}
+
+function openFiche(id){
+  const p = PERSONAS.find(x=>x.id===id);
+  const f = p.fiche;
+  const on = S.selected.includes(id);
+  $("#ficheBody").innerHTML = `
+    <div class="fiche-head">
+      <span class="dot">${p.init}</span>
+      <span><b>${esc(p.name)}</b><span>${esc(p.role)} · ${esc(p.meta)}</span></span>
+    </div>
+    <p class="quote">${esc(f.citation)}</p>
+    <div class="f"><b>Pourquoi l'interroger</b><p>${esc(f.utilite)}</p></div>
+    <div class="f"><b>Motivations dominantes</b><p>${esc(f.motivations)}</p></div>
+    <div class="f"><b>Ce qu'il ou elle cherche</b><p>${esc(f.cherche)}</p></div>
+    <div class="f"><b>Ce qui le ou la fait décrocher</b><p>${esc(f.deteste)}</p></div>
+    <div class="f"><b>Plateformes</b><p>${p.plats.map(([n,w])=>n+" "+"+".repeat(w)).join(" · ")}</p></div>`;
+  $("#ficheAdd").textContent = on ? "Retirer du panel" : "Ajouter au panel";
+  $("#ficheAdd").dataset.id = id;
+  openModal("fiche");
+}
+function syncGrid(){
+  $("#grid").querySelectorAll(".pcard").forEach(b=>{
+    b.setAttribute("aria-pressed", S.selected.includes(b.dataset.id));
+  });
+  const cur = [...S.selected].sort().join(",");
+  $("#presets").querySelectorAll(".pill[data-i]").forEach(b=>{
+    b.classList.toggle("on", [...PRESETS[b.dataset.i].ids].sort().join(",")===cur);
+  });
+  const n=S.selected.length;
+  $("#count").textContent = n===0 ? "Aucun profil sélectionné."
+    : n===PERSONAS.length ? "Panel complet — 7 profils interrogés."
+    : `${n} profil${n>1?"s":""} sélectionné${n>1?"s":""} : ${PERSONAS.filter(p=>S.selected.includes(p.id)).map(p=>p.name).join(", ")}.`;
+  $("#go").disabled = n===0;
+}
+
+/* --- modes --- */
+function renderModes(){
+  $("#modes").innerHTML = MODES.map(m=>`
+    <button class="mode" data-id="${m.id}" aria-pressed="${S.mode===m.id}">
+      <b>${m.label}</b><span>${m.hint}</span>
+    </button>`).join("");
+  $("#modes").querySelectorAll(".mode").forEach(b=>{
+    b.addEventListener("click",()=>{ S.mode=b.dataset.id; renderModes(); renderExamples(); });
+  });
+}
+function renderExamples(){
+  const m = MODES.find(x=>x.id===S.mode);
+  $("#examples").innerHTML = m.ex.map(e=>`<button class="ex">${e}</button>`).join("");
+  $("#examples").querySelectorAll(".ex").forEach(b=>{
+    b.addEventListener("click",()=>{ $("#q").value=b.textContent; $("#q").focus(); });
+  });
+  $("#q").placeholder = m.id==="concept"
+    ? "Ex. : une série de 4 épisodes sur des jeunes qui reprennent la ferme familiale, format vertical 3-5 min."
+    : m.id==="reaction" ? "Ex. : vous suivez quoi comme actu en ce moment ?"
+    : m.id==="angles" ? "Ex. : la votation sur les rentes."
+    : "Ex. : colle ici ta légende, ton post ou ta réponse en commentaire.";
+}
+
+/* ============================================================
+   APPEL MODÈLE
+   ============================================================ */
+async function callModel(prompt){
+  const proxy = load("tk_proxy") || CONFIG.PROXY_URL;
+  const key   = load("tk_key");
+  const model = load("tk_model") || CONFIG.MODEL;
+
+  if(!proxy && !key){
+    const e = new Error("no-access"); e.code="no-access"; throw e;
+  }
+
+  const body = {
+    model,
+    max_tokens: CONFIG.MAX_TOKENS,
+    messages:[{role:"user", content: prompt}]
+  };
+
+  let url, headers;
+  if(proxy){
+    url = proxy.replace(/\/$/,"");
+    headers = {"Content-Type":"application/json"};
+  }else{
+    url = "https://api.anthropic.com/v1/messages";
+    headers = {
+      "Content-Type":"application/json",
+      "x-api-key": key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    };
+  }
+
+  const r = await fetch(url,{method:"POST",headers,body:JSON.stringify(body)});
+  if(!r.ok){
+    const t = await r.text().catch(()=> "");
+    const e = new Error(t || ("HTTP "+r.status)); e.code = "http-"+r.status; throw e;
+  }
+  const data = await r.json();
+  return (data.content||[]).map(b=>b.type==="text"?b.text:"").filter(Boolean).join("\n");
+}
+
+/* ============================================================
+   RENDU
+   ============================================================ */
+const esc = s => String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+function miniMd(txt){
+  const lines = esc(txt).split("\n");
+  let html="", inList=false;
+  const close=()=>{ if(inList){html+="</ul>";inList=false;} };
+  for(let l of lines){
+    l = l.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+    if(/^###\s+/.test(l)){ close(); html+="<h3>"+l.replace(/^###\s+/,"")+"</h3>"; }
+    else if(/^##\s+/.test(l)){ close(); html+="<h2>"+l.replace(/^##\s+/,"")+"</h2>"; }
+    else if(/^#\s+/.test(l)){ close(); html+="<h2>"+l.replace(/^#\s+/,"")+"</h2>"; }
+    else if(/^---+$/.test(l.trim())){ close(); html+="<hr>"; }
+    else if(/^[-*•]\s+/.test(l)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+l.replace(/^[-*•]\s+/,"")+"</li>"; }
+    else if(/^\d+\.\s+/.test(l)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+l.replace(/^\d+\.\s+/,"")+"</li>"; }
+    else if(l.trim()===""){ close(); }
+    else { close(); html+="<p>"+l+"</p>"; }
+  }
+  close();
+  return html;
+}
+
+function tryJson(txt){
+  const clean = txt.replace(/```json/gi,"").replace(/```/g,"").trim();
+  const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
+  if(a<0||b<0) return null;
+  try{ return JSON.parse(clean.slice(a,b+1)); }catch(e){ return null; }
+}
+
+function renderConcept(j){
+  const order = [...(j.personas||[])].sort((x,y)=>(y.score||0)-(x.score||0));
+  const find = id => PERSONAS.find(p=>p.id===id) || {name:id,role:"",color:"var(--accent)",init:"?"};
+
+  const recap = `<div class="synth"><h3>📊 Pertinence par persona</h3><div class="recap">` +
+    order.map(a=>{
+      const p=find(a.id);
+      return `<div class="recap-row" style="--pc:${p.color}">
+        <span class="nmm">${esc(p.name)}</span>
+        <span class="bar"><i style="width:${(a.score||0)/5*100}%"></i></span>
+        <span class="vv">${a.score||0}/5</span></div>`;
+    }).join("") + `</div></div>`;
+
+  const cards = order.filter(a=>(a.score||0)>=3).map(a=>{
+    const p=find(a.id);
+    return `<article class="ans" style="--pc:${p.color}">
+      <div class="ans-top">
+        <span class="dot">${p.init}</span>
+        <span class="who"><b>${esc(p.name)}</b><span>${esc(p.role)}</span></span>
+        <span class="score">${a.score||"–"}<small>/5</small></span>
+      </div>
+      <p class="quote">${esc(a.citation||"")}</p>
+      <div class="fields">
+        <div class="f"><b>Première réaction</b><p>${esc(a.reaction||"—")}</p></div>
+        <div class="f"><b>Ce qu'il aime</b><p>${esc(a.aime||"—")}</p></div>
+        <div class="f"><b>Ce qu'il déteste</b><p>${esc(a.deteste||"—")}</p></div>
+        <div class="f"><b>Sa question</b><p>${esc(a.question||"—")}</p></div>
+      </div>
+      <div class="tags">
+        <span class="tag hi">${esc(a.plateforme||"—")}</span>
+        <span class="tag">${esc(a.moment||"—")}</span>
+        <span class="tag">Partage ${esc(a.partage||"—")}</span>
+        ${(a.userNeeds||[]).map(u=>`<span class="tag">${esc(u)}</span>`).join("")}
+      </div>
+    </article>`;
+  }).join("");
+
+  const low = order.filter(a=>(a.score||0)<3);
+  const lowBlock = low.length ? `<div class="synth"><h3>Peu ou pas concernés</h3>` +
+    low.map(a=>{const p=find(a.id);
+      return `<h4 style="color:${p.color}">${esc(p.name)} — ${a.score}/5</h4><p>${esc(a.reaction||a.deteste||"")}</p>`;
+    }).join("") + `</div>` : "";
+
+  const s = j.synthese||{};
+  const synth = `<div class="synth">
+    <h3>🎯 Recommandation éditoriale</h3>
+    <p>${esc(s.reco||"")}</p>
+    <h4>🧠 User needs activés</h4><p>${esc(s.userNeeds||"—")}</p>
+    <h4>📱 Plateforme idéale</h4><p>${esc(s.plateforme||"—")}</p>
+    <h4>⚠️ Risques</h4><ul>${(s.risques||[]).map(x=>`<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ul>
+    <h4>💡 Opportunités</h4><ul>${(s.opportunites||[]).map(x=>`<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ul>
+  </div>`;
+
+  return recap + cards + lowBlock + synth;
+}
+
+function renderOut(html){
+  $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2>
+    <button class="ghost" id="btnCopyRes">Copier le résultat</button></div>` + html;
+  $("#btnCopyRes")?.addEventListener("click",e=>{
+    const txt = $("#out").innerText.replace(/^Réponse du panel\nCopier le résultat\n/,"");
+    navigator.clipboard.writeText(txt);
+    e.target.textContent = "Copié";
+    setTimeout(()=>e.target.textContent="Copier le résultat",1600);
+  });
+  $("#out").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ============================================================
+   RUN
+   ============================================================ */
+async function run(){
+  const q = $("#q").value.trim();
+  if(!q){ $("#q").focus(); $("#status").textContent="Écris d'abord ton sujet."; return; }
+  if(!S.selected.length) return;
+
+  $("#go").disabled = true;
+  $("#status").textContent = "";
+  const names = PERSONAS.filter(p=>S.selected.includes(p.id)).map(p=>p.name).join(", ");
+  $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2></div>
+    <div class="loading"><span class="spin"></span> Le panel réfléchit — ${esc(names)}. Une trentaine de secondes.</div>`;
+
+  const prompt = buildPrompt(S.selected, S.mode, q);
+  try{
+    const txt = await callModel(prompt);
+    if(S.mode==="concept"){
+      const j = tryJson(txt);
+      renderOut(j && j.personas ? renderConcept(j) : `<div class="md">${miniMd(txt)}</div>`);
+    }else{
+      renderOut(`<div class="md">${miniMd(txt)}</div>`);
+    }
+  }catch(err){
+    let msg;
+    if(err.code==="no-access"){
+      msg = `<b>Pas encore d'accès au modèle</b>Ouvre <em>Réglages</em> et renseigne l'adresse du relais fourni par l'équipe, ou ta propre clé API. Sinon, utilise <em>Copier le prompt</em> et colle-le dans Claude.`;
+    }else if(String(err.code).startsWith("http-401")||String(err.code).startsWith("http-403")){
+      msg = `<b>Accès refusé</b>Message exact renvoyé par le relais :<br><br><code style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-word">${esc(err.message).slice(0,600)}</code>`;
+    }else if(String(err.code).startsWith("http-429")){
+      msg = `<b>Trop de demandes d'un coup</b>Attends une minute et relance le panel.`;
+    }else{
+      msg = `<b>La requête n'a pas abouti</b>${esc(err.message).slice(0,400)}`;
+    }
+    $("#out").innerHTML = `<div class="res-head"><h2>Réponse du panel</h2></div><div class="err">${msg}</div>`;
+  }finally{
+    $("#go").disabled = false;
+  }
+}
+
+/* ============================================================
+   MODALE
+   ============================================================ */
+function openModal(which){
+  $("#mask").hidden = false;
+  $("#paneSettings").hidden = which!=="settings";
+  $("#panePrompt").hidden = which!=="prompt";
+  $("#paneFiche").hidden = which!=="fiche";
+}
+function closeModal(){ $("#mask").hidden = true; }
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderPresets(); renderGrid(); renderModes(); renderExamples();
+
+$("#fClose").addEventListener("click",closeModal);
+$("#ficheAdd").addEventListener("click",e=>{
+  const id=e.target.dataset.id;
+  S.selected = S.selected.includes(id) ? S.selected.filter(x=>x!==id) : [...S.selected,id];
+  syncGrid(); closeModal();
+});
+$("#go").addEventListener("click",run);
+$("#q").addEventListener("keydown",e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") run(); });
+
+$("#btnSettings").addEventListener("click",()=>{
+  $("#inProxy").value = load("tk_proxy") || CONFIG.PROXY_URL;
+  $("#inKey").value   = load("tk_key");
+  $("#inModel").value = load("tk_model") || CONFIG.MODEL;
+  openModal("settings");
+});
+$("#mSave").addEventListener("click",()=>{
+  store("tk_proxy",$("#inProxy").value.trim());
+  store("tk_key",$("#inKey").value.trim());
+  store("tk_model",$("#inModel").value.trim()||CONFIG.MODEL);
+  closeModal();
+});
+$("#mClose").addEventListener("click",closeModal);
+$("#pClose").addEventListener("click",closeModal);
+$("#btnPrompt").addEventListener("click",()=>{
+  const q = $("#q").value.trim() || "[colle ici ton concept, ton sujet ou ta question]";
+  const ids = S.selected.length ? S.selected : PERSONAS.map(p=>p.id);
+  $("#promptBox").value = buildPrompt(ids, S.mode, q);
+  openModal("prompt");
+});
+$("#pCopy").addEventListener("click",e=>{
+  navigator.clipboard.writeText($("#promptBox").value);
+  e.target.textContent="Copié";
+  setTimeout(()=>e.target.textContent="Copier",1600);
+});
+$("#mask").addEventListener("click",e=>{ if(e.target===$("#mask")) closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+</script>
+</body>
+</html>
