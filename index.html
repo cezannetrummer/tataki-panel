@@ -942,7 +942,9 @@ async function callModel(messages){
   let url, headers;
   if(proxy){
     url = proxy.replace(/\/$/,"");
-    headers = {"Content-Type":"application/json"};
+    // text/plain plutôt qu'application/json : évite la requête de vérification
+    // préalable du navigateur, que certains réseaux d'entreprise bloquent.
+    headers = {"Content-Type":"text/plain;charset=UTF-8"};
   }else{
     url = "https://api.anthropic.com/v1/messages";
     headers = {
